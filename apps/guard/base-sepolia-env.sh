@@ -11,7 +11,7 @@ if [ -z "$PRIVATE_KEY" ] || [ -z "$RPC_URL" ]; then
   return 1 2>/dev/null || exit 1
 fi
 
-export NETWORK=sepolia
-export VITE_NETWORK=sepolia
+export NETWORK=base-sepolia
+export VITE_NETWORK=base-sepolia
 export VITE_RPC_URL="$RPC_URL"
-export INFERENCE_ADDRESS="0xbDAc1B0F60db1a3461F53A69332C4Cc06C724A0b"
+export INFERENCE_ADDRESS="0xb7c2d85259d676b0dfbf932e992f8408f5b42b68"

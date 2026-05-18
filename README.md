@@ -29,10 +29,10 @@ Before getting started, make sure you have the following installed and set up:
 ### Web3 Requirements
 - **MetaMask (or compatible Web3 Wallet)**: A browser extension to interact with the frontend.
 - **Developer Private Key**: A wallet private key to deploy contracts and run the orchestrator.
-- **Sepolia ETH**: Testnet tokens to pay for gas on the Sepolia network. (You can get these from a Sepolia faucet).
-- **RPC Provider URL (Optional but recommended)**: A free Alchemy or Infura account to get a dedicated Sepolia RPC URL. (The starter kit provides a default URL, but creating your own avoids rate limits).
+- **Base Sepolia ETH**: Testnet tokens to pay for gas on the Base Sepolia network. (You can get these from a Base faucet or bridge from Sepolia).
+- **RPC Provider URL (Optional but recommended)**: The starter kit provides the free public Base RPC (`https://sepolia.base.org`) by default. However, you can create a free Alchemy account to get a dedicated Base Sepolia RPC URL to avoid rate limits and speed up your app.
 
-*Note: You **do not** need to deploy the AI Oracle yourself. The starter kit apps point to the globally deployed Cadabra `AbraInference` Oracle on Sepolia.*
+*Note: You **do not** need to deploy the AI Oracle yourself. The starter kit apps point to the globally deployed Cadabra `AbraInference` Oracle on Base Sepolia.*
 
 ## How to Run an Example
 
@@ -47,7 +47,7 @@ Let's use the `chat` app as an example.
    ```bash
    cp .env.example .env
    ```
-3. Open `.env` and fill in your MetaMask private key and your Sepolia RPC URL (e.g., from Alchemy or Infura).
+3. Open `.env` and fill in your MetaMask private key. You can leave the default public Base Sepolia RPC URL as is, or uncomment and swap it for your own Alchemy URL for better performance.
 
 ### 2. Install Dependencies
 Install all necessary packages across the contracts, orchestrator, and web frontend:
@@ -59,15 +59,15 @@ npm run install:all
 ### 3. Start the App
 Load your wallet configuration and start the app:
 ```bash
-source sepolia-env.sh
+source base-sepolia-env.sh
 npm run dev
 ```
 
 This single command will:
-1. Compile and deploy your smart contract to Sepolia.
+1. Compile and deploy your smart contract to Base Sepolia.
 2. Start the Orchestrator loop in the background.
 3. Start the React frontend on `http://localhost:5173`.
 
 ---
 
-> **Tip:** We recommend using the **MetaMask** browser extension. Make sure to switch your network to **Sepolia** to interact with the frontend!
+> **Tip:** We recommend using the **MetaMask** browser extension. Make sure to switch your network to **Base Sepolia** to interact with the frontend!
