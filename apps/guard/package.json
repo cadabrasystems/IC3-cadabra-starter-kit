@@ -1,0 +1,14 @@
+{
+  "name": "guard",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "bootstrap": "bash scripts/install-linux.sh",
+    "install:all": "npm --prefix contracts install && npm --prefix orchestrator install && npm --prefix web install",
+    "test": "npm --prefix contracts test && npm --prefix orchestrator test && npm --prefix web test",
+    "test:ui": "node orchestrator/test/run.mjs --ui",
+    "dev": "bash scripts/dev.sh",
+    "build:web": "npm --prefix web run build",
+    "acceptance:multipass": "bash scripts/multipass-acceptance.sh"
+  }
+}

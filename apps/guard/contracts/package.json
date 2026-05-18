@@ -1,0 +1,17 @@
+{
+  "name": "guard-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test",
+    "node": "anvil --host 127.0.0.1 --port 8545",
+    "deploy:localhost": "npm run build && node scripts/deploy.mjs",
+    "deploy:network": "npm run build && node scripts/deploy.mjs",
+    "watch:localhost": "node scripts/watch-state.mjs"
+  },
+  "devDependencies": {
+    "viem": "^2.43.0"
+  }
+}

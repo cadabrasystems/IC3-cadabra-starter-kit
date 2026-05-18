@@ -1,0 +1,10 @@
+apps/chat/.env
+apps/chat/contracts/node_modules
+apps/chat/contracts/node_modules/*
+apps/chat/contracts/out
+apps/chat/orchestrator/node_modules
+.orchestrator.log
+apps/chat/orchestrator/node_modules/*
+apps/chat/contracts/cache
+package-lock.json
+apps/chat/.env.swp
