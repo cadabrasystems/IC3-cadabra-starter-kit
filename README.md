@@ -2,11 +2,51 @@
 
 Welcome to the **Cadabra Hackathon Starter Kit**! The core goal of this hackathon is to empower you to build innovative Web3 applications that leverage an AI inference agent natively available directly on the blockchain. 
 
-This repository is a lightweight, fully decoupled sandbox designed to help you quickly integrate your smart contracts with the global `AbraInference` Oracle.
+Your smart contracts can ask an AI a question and receive an answer — all fully on-chain, trustlessly, and without any centralized API keys. This repository is a lightweight, fully decoupled sandbox designed to help you quickly integrate your smart contracts with the global `AbraInference` Oracle.
 
-This template contains two working reference implementations to help you get started immediately:
+## Quick Start — What You Need to Know
+
+### The Network: Base Sepolia
+
+All development happens on **Base Sepolia**, a free testnet for the Base L2 blockchain. You will deploy contracts, send transactions, and interact with the AI Oracle entirely on this network. It costs nothing — all ETH used is free testnet ETH.
+
+| Detail | Value |
+|---|---|
+| **Network Name** | Base Sepolia |
+| **Chain ID** | `84532` |
+| **Currency** | ETH (testnet) |
+| **Block Explorer** | [sepolia.basescan.org](https://sepolia.basescan.org) |
+| **Public RPC** | `https://base-sepolia-rpc.publicnode.com` |
+
+### Step 1: Set Up MetaMask
+
+1. Install the [MetaMask browser extension](https://metamask.io/download/) if you don't have it.
+2. **You do NOT need to manually add the Base Sepolia network.** When you open any of our frontend apps and connect your wallet, the app will automatically detect your network and prompt MetaMask to switch to Base Sepolia (or add it for you if it's missing).
+3. If you prefer to add it manually: Open MetaMask → Settings → Networks → Add Network, and enter the details from the table above.
+
+### Step 2: Get Free Testnet ETH
+
+You need testnet ETH to deploy contracts and send transactions. Here's how:
+
+1. **Get Sepolia ETH**: Claim free ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia). Paste your MetaMask wallet address and claim.
+2. **Bridge to Base Sepolia**: Go to the [Base Bridge](https://bridge.base.org/deposit), connect your wallet, switch to the Sepolia testnet, and bridge your Sepolia ETH over to Base Sepolia. This takes about 1 minute.
+
+> **Tip:** You only need a small amount of ETH (0.01 - 0.05 is plenty) to deploy contracts and send messages during the hackathon.
+
+### Step 3: Export Your Private Key
+
+The deployment scripts need your wallet's private key to sign transactions from the command line.
+
+1. Open MetaMask → Click the three dots (⋮) on your account → **Account Details** → **Show Private Key**.
+2. Copy it. You'll paste it into a `.env` file in the next step.
+
+> ⚠️ **Security Note:** Never use your real mainnet wallet for hackathon development. Create a fresh MetaMask account specifically for this event. It only holds free testnet ETH, so there is zero risk.
+
+---
 
 ## Included Reference Apps
+
+This template contains two working reference implementations to help you get started immediately:
 
 1. **[Public Chat App (`apps/chat`)](./apps/chat)**
    A classic multi-user interface where messages are stored on-chain and answered by the decentralized AI agent.
@@ -26,17 +66,20 @@ Let's use the `chat` app as an example.
 
 ### Prerequisites
 
-Before starting, you must have **Foundry** installed to compile the smart contracts:
-```bash
-curl -L https://foundry.paradigm.xyz | bash
-foundryup
-```
+Before starting, make sure you have:
+- **Node.js v22+** — [Download here](https://nodejs.org/)
+- **Foundry** (for compiling and deploying Solidity contracts):
+  ```bash
+  curl -L https://foundry.paradigm.xyz | bash
+  foundryup
+  ```
 
 ### 1. Configure Your Wallet
-1. Copy the `.env-example` file to `.env` at the root of the project and add your own MetaMask `PRIVATE_KEY` (Make sure you have Base Sepolia ETH!).
+1. Copy the `.env-example` file to `.env` at the root of the project and paste in your MetaMask private key:
    ```bash
    cp .env-example .env
    ```
+   Then edit `.env` and set your `PRIVATE_KEY`.
 2. Navigate to the app directory:
    ```bash
    cd apps/chat
@@ -62,30 +105,17 @@ This single command will:
 2. Start the Orchestrator loop in the background.
 3. Start the React frontend on `http://localhost:5173`.
 
----
-
-> **Tip:** We recommend using the **MetaMask** browser extension. Make sure to switch your network to **Base Sepolia** to interact with the frontend!
-
-## Network & Faucets
-
-To deploy contracts and interact with the applications, you will need **Base Sepolia ETH**. 
-
-1. **Get Sepolia ETH**: First, claim free testnet ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia).
-2. **Bridge to Base Sepolia**: Once you have Sepolia ETH, bridge it over to the Base Sepolia network using the official [Base Bridge](https://bridge.base.org/deposit).
-
-## MetaMask Configuration & Frontend
-
-The frontend applications are perfectly designed for hackathon users and automatically handle network configuration. When a user connects their MetaMask wallet, the app uses `viem` and `wagmi` to check their current network. 
-
-If they are not on Base Sepolia, the frontend will automatically prompt MetaMask to switch networks, or gracefully inject the Base Sepolia network configuration into their wallet if they don't already have it installed!
+Open `http://localhost:5173` in your browser, connect MetaMask, and start chatting with the AI!
 
 ## Architecture: How Apps Access the AI
 
 Both the Chat and Guard reference apps interact with the AI Oracle through a standard Solidity interface, making it incredibly easy to build your own dApps on top of the same infrastructure.
 
+The core idea is simple: your smart contract sends a **plain-text prompt** (any string — a question, instruction, or conversation history) to the Oracle, and receives back a **plain-text answer** from an AI agent. The prompt is just text; there is no special format required. You request an inference, then later check its state — once finalized, the result (the AI's response) is available to read on-chain.
+
 ### The `IDecentralizedAI` Interface
 
-Inside each app's `contracts/src/interfaces/` folder, you will find [`IDecentralizedAI.sol`](./apps/chat/contracts/src/interfaces/IDecentralizedAI.sol). This is the universal interface your smart contract uses to talk to the AI Oracle. It exposes four functions:
+We provide a copy of the interface at the root of this repository for easy reference: [`interfaces/IDecentralizedAI.sol`](./interfaces/IDecentralizedAI.sol). This is the universal interface your smart contract imports to talk to the AI Oracle. It is fully documented with NatSpec comments and a usage example. It exposes four functions:
 
 | Function | Description |
 |---|---|
