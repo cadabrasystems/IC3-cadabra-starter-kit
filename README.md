@@ -29,7 +29,7 @@ All development happens on **Base Sepolia**, a free testnet for the Base L2 bloc
 You need testnet ETH to deploy contracts and send transactions. Here's how:
 
 1. **Get Sepolia ETH**: Claim free ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia). Paste your MetaMask wallet address and claim.
-2. **Bridge to Base Sepolia**: Go to the [Base Bridge](https://bridge.base.org/deposit), connect your wallet, switch to the Sepolia testnet, and bridge your Sepolia ETH over to Base Sepolia. This takes about 1 minute.
+2. **Bridge to Base Sepolia**: Go to the [Base Bridge](https://superbridge.app/base-sepolia), connect your wallet, switch to the Sepolia testnet, and bridge your Sepolia ETH over to Base Sepolia. This takes about 1 minute.
 
 > **Tip:** You only need a small amount of ETH (0.01 - 0.05 is plenty) to deploy contracts and send messages during the hackathon.
 
