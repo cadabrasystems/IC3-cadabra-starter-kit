@@ -89,28 +89,66 @@ export default function App() {
   }, []);
 
   // Poll for conversations and active chat messages
+  // Reads AI answers directly from the Oracle (zero gas) — no orchestrator needed!
   useEffect(() => {
-    if (!contract) return;
+    if (!contract || !publicClient) return;
+
+    let inferenceAddress = null;
+    let inferenceAbi = null;
 
     const fetchState = async () => {
       try {
+        // Load inference config once
+        if (!inferenceAddress) {
+          const res = await fetch(`/${NETWORK}.json`);
+          const config = await res.json();
+          inferenceAddress = config.inference.address;
+          inferenceAbi = config.inference.abi;
+        }
+
         const chats = await contract.read.getChats();
         setConversations(chats.map(c => ({ id: Number(c.id), title: c.title })));
 
         if (activeChatId) {
           const msgs = await contract.read.getMessages([BigInt(activeChatId)]);
-          setMessages(msgs.map(m => ({
+          const displayMessages = msgs.map(m => ({
             role: m.role,
             content: m.content
-          })));
+          }));
 
-          // Check if it's waiting for an agent
+          // Check if there's a pending AI request
           const chatDetails = chats.find(c => Number(c.id) === activeChatId);
           if (chatDetails && Number(chatDetails.pendingRequestId) > 0) {
-            setIsLoading(true);
+            const requestId = chatDetails.pendingRequestId;
+
+            // Poll the Oracle directly — isReady() is a free view call
+            const ready = await publicClient.readContract({
+              address: inferenceAddress,
+              abi: inferenceAbi,
+              functionName: 'isReady',
+              args: [requestId]
+            });
+
+            if (ready) {
+              // Read the AI answer directly from the Oracle — free view call
+              const result = await publicClient.readContract({
+                address: inferenceAddress,
+                abi: inferenceAbi,
+                functionName: 'getResult',
+                args: [requestId]
+              });
+
+              // Show the answer immediately in the UI
+              displayMessages.push({ role: 'agent', content: result });
+              setIsLoading(false);
+            } else {
+              setIsLoading(true);
+            }
           } else {
             setIsLoading(false);
           }
+
+          setMessages(displayMessages);
         }
       } catch (err) {
         console.error("Error fetching state", err);
@@ -118,9 +156,9 @@ export default function App() {
     };
 
     fetchState();
-    const interval = setInterval(fetchState, 2000); // poll every 2s
+    const interval = setInterval(fetchState, 3000); // poll every 3s
     return () => clearInterval(interval);
-  }, [contract, activeChatId]);
+  }, [contract, publicClient, activeChatId]);
 
   // Scroll to bottom when messages change
   useEffect(() => {

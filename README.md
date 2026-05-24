@@ -57,8 +57,9 @@ This template contains two working reference implementations to help you get sta
 
 Each app in the `apps/` directory is an independent, full-stack Web3 application containing:
 - `contracts/`: A Foundry project containing the Smart Contracts.
-- `orchestrator/`: A Node.js background worker that polls the Oracle and settles answers.
 - `web/`: A modern Vite + React frontend powered by `viem`.
+
+> **No backend server or orchestrator is needed!** The frontend reads AI answers directly from the Oracle using free `view` calls. You just deploy a contract and host a static website.
 
 ## How to Run an Example
 
@@ -102,8 +103,7 @@ npm run dev
 
 This single command will:
 1. Compile and deploy your smart contract to Base Sepolia.
-2. Start the Orchestrator loop in the background.
-3. Start the React frontend on `http://localhost:5173`.
+2. Start the React frontend on `http://localhost:5173`.
 
 Open `http://localhost:5173` in your browser, connect MetaMask, and start chatting with the AI!
 
@@ -176,49 +176,31 @@ User (MetaMask) → Your App Contract → inferenceService.requestInference(quer
                                               ↓
                               Agent calls proposeResult() + resolve()
                                               ↓
-                              Orchestrator polls isReady(), calls settleMessage()
+                              Frontend polls isReady() + getResult() (free view calls)
                                               ↓
-                              Frontend reads the settled answer from the chain
+                              Answer displayed — no backend needed!
 ```
+
+> **Note:** No orchestrator or backend server is required. The frontend polls the Oracle directly using `isReady()` and `getResult()`, which are free read-only calls that cost zero gas.
 
 ## Deploying to the Cloud
 
-While `npm run dev` is perfect for local development, you can also split the app into its components and deploy them independently for a production-ready setup.
+Since the frontend reads AI answers directly from the Oracle (no backend needed!), deploying is as simple as hosting a static website.
 
 ### Frontend → Vercel (or any static host)
 
-The `web/` folder is a standard Vite + React app that can be deployed to Vercel, Netlify, or any static hosting provider.
+The `web/` folder is a standard Vite + React app that can be deployed to Vercel, Netlify, GitHub Pages, or any static hosting provider.
 
 **Vercel Deployment Steps:**
 1. Push your code to GitHub (make sure `web/public/base-sepolia.json` is committed — it contains your deployed contract address and ABI).
 2. Go to [vercel.com](https://vercel.com), click **Add New Project**, and import your repository.
-3. Set the **Root Directory** to `hackathon-starter-kit/apps/chat/web` (or `apps/guard/web`).
+3. Set the **Root Directory** to your app's `web` folder (e.g. `hackathon-starter-kit/apps/chat/web`).
 4. Add the following **Environment Variable** (under Settings → Environment Variables):
    - **Key:** `VITE_NETWORK`  **Value:** `base-sepolia`
    - ⚠️ Make sure to enable it for **Production** (not just Development!).
 5. Click **Deploy**.
 
 > **Important:** Every time you redeploy a new smart contract (which generates a new `base-sepolia.json`), you must commit the updated JSON file, push to GitHub, and **Redeploy** on Vercel (without build cache) so the frontend picks up the new contract address.
-
-### Orchestrator → Cloud Server (VPS + PM2)
-
-The Orchestrator is a lightweight Node.js polling loop that watches the blockchain for pending AI answers and settles them into your app contract. It runs perfectly on a small cloud server (e.g., a $4/month DigitalOcean Droplet).
-
-**Steps:**
-1. SSH into your server and clone the repository.
-2. Install dependencies:
-   ```bash
-   cd apps/chat
-   npm install && npm run install:all
-   ```
-3. Source your environment and start with PM2:
-   ```bash
-   source base-sepolia-env.sh
-   pm2 start orchestrator/src/server.mjs --name "chat-orchestrator"
-   ```
-4. View logs anytime: `pm2 logs chat-orchestrator`
-
-> **Tip:** The Orchestrator and the Vercel frontend **must** point to the same contract address. Both read from the same `base-sepolia.json` file, so always `git pull` on your server after redeploying a contract and run `pm2 restart chat-orchestrator`.
 
 ## Troubleshooting
 
@@ -229,9 +211,6 @@ If MetaMask is stuck loading or fails to connect to the Base Sepolia network, it
 
 ### Vercel: Page loads but app is stuck / "localhost.json 404"
 This means the `VITE_NETWORK` environment variable is missing or not set for the **Production** environment. Go to Vercel Settings → Environment Variables, set `VITE_NETWORK=base-sepolia` with the **Production** checkbox enabled, and **Redeploy without build cache**.
-
-### Orchestrator settles but frontend doesn't update
-Make sure both the Orchestrator and the frontend's `web/public/base-sepolia.json` file contain the **same contract address**. If you redeployed the contract, update both sides.
 
 ## Live Demo
 
