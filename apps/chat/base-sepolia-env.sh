@@ -1,11 +1,17 @@
 #!/bin/bash
 export NETWORK=base-sepolia
-export RPC_URL="https://base-sepolia-rpc.publicnode.com"
+
 ROOT_DIR=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 if [ -f "$ROOT_DIR/.env" ]; then
     set -a
     source "$ROOT_DIR/.env"
     set +a
+fi
+
+if [ -n "$ALCHEMY_API_KEY" ]; then
+    export RPC_URL="https://base-sepolia.g.alchemy.com/v2/$ALCHEMY_API_KEY"
+else
+    export RPC_URL="https://base-sepolia-rpc.publicnode.com"
 fi
 
 if [ -z "$PRIVATE_KEY" ]; then
