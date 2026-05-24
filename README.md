@@ -43,18 +43,18 @@ npm run install:all
 ### 3. Start the App
 Load your wallet configuration and start the app:
 ```bash
-source sepolia-env.sh
+source base-sepolia-env.sh
 npm run dev
 ```
 
 This single command will:
-1. Compile and deploy your smart contract to Sepolia.
+1. Compile and deploy your smart contract to Base Sepolia.
 2. Start the Orchestrator loop in the background.
 3. Start the React frontend on `http://localhost:5173`.
 
 ---
 
-> **Tip:** We recommend using the **MetaMask** browser extension. Make sure to switch your network to **Sepolia** (or **Base Sepolia**) to interact with the frontend!
+> **Tip:** We recommend using the **MetaMask** browser extension. Make sure to switch your network to **Base Sepolia** to interact with the frontend!
 
 ## Troubleshooting
 
