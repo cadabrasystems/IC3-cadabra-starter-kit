@@ -15,7 +15,7 @@ else
 fi
 
 if [ -z "$PRIVATE_KEY" ]; then
-    echo "ERROR: PRIVATE_KEY is not set. Please copy .env-example to .env at the root of the project and set your private key."
+    echo "ERROR: PRIVATE_KEY is not set. Please copy the example file at $ROOT_DIR/.env-example to $ROOT_DIR/.env and set your PRIVATE_KEY inside."
     return 1 2>/dev/null || exit 1
 fi
 
