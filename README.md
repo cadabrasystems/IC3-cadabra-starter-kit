@@ -202,3 +202,11 @@ This means the `VITE_NETWORK` environment variable is missing or not set for the
 
 ### Orchestrator settles but frontend doesn't update
 Make sure both the Orchestrator and the frontend's `web/public/base-sepolia.json` file contain the **same contract address**. If you redeployed the contract, update both sides.
+
+## Live Demo
+
+Check out a live, working deployment of the Chat App to see exactly what you'll be building:
+
+🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-copy-ejwp.vercel.app/)**
+
+Connect your MetaMask wallet (on the Base Sepolia network), send a message, and watch the decentralized AI respond in real-time!
