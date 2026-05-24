@@ -24,6 +24,14 @@ Each app in the `apps/` directory is an independent, full-stack Web3 application
 
 Let's use the `chat` app as an example.
 
+### Prerequisites
+
+Before starting, you must have **Foundry** installed to compile the smart contracts:
+```bash
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
+```
+
 ### 1. Configure Your Wallet
 1. Copy the `.env-example` file to `.env` at the root of the project and add your own MetaMask `PRIVATE_KEY` (Make sure you have Base Sepolia ETH!).
    ```bash
