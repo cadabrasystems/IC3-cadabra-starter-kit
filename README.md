@@ -1,6 +1,8 @@
 # Cadabra Hackathon Starter Kit
 
-Welcome to the **Cadabra Hackathon Starter Kit**! This repository is a lightweight, fully decoupled sandbox designed for building Web3 AI applications on top of the `AbraInference` Oracle.
+Welcome to the **Cadabra Hackathon Starter Kit**! The core goal of this hackathon is to empower you to build innovative Web3 applications that leverage an AI inference agent natively available directly on the blockchain. 
+
+This repository is a lightweight, fully decoupled sandbox designed to help you quickly integrate your smart contracts with the global `AbraInference` Oracle.
 
 This template contains two working reference implementations to help you get started immediately:
 
