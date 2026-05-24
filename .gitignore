@@ -8,3 +8,4 @@ apps/chat/orchestrator/node_modules/*
 apps/chat/contracts/cache
 package-lock.json
 apps/chat/.env.swp
+.env
