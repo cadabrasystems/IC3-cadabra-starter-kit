@@ -103,7 +103,7 @@
     ]
   },
   "chat": {
-    "address": "0x6286e0c01c9907dd88aa538e714bc54df2be8527",
+    "address": "0x54fa0ecf4e106e628729771f9371d3904050885f",
     "abi": [
       {
         "type": "constructor",
