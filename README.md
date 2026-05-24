@@ -81,11 +81,114 @@ If they are not on Base Sepolia, the frontend will automatically prompt MetaMask
 
 ## Architecture: How Apps Access the AI
 
-Both the Chat and Guard reference apps interact with the AI Oracle through a standard interface, making it incredibly easy to build your own dApps.
+Both the Chat and Guard reference apps interact with the AI Oracle through a standard Solidity interface, making it incredibly easy to build your own dApps on top of the same infrastructure.
 
-1. **The Oracle Interface**: Inside your app's contract folder, you will find `IDecentralizedAI.sol`. This abstract contract/interface defines the standard `requestInference(string query)` function.
-2. **The App Contracts**: Contracts like `PublicChat.sol` and `GuardGame.sol` import this interface and initialize a pointer to the global `AbraInference` Oracle during deployment.
-3. **Triggering the AI**: When a user submits a message, the app contract simply calls `inference.requestInference(query)`. This emits an event on the blockchain, which the central AI Agent instantly detects, processes via OpenAI, and resolves the answer back on-chain!
+### The `IDecentralizedAI` Interface
+
+Inside each app's `contracts/src/interfaces/` folder, you will find [`IDecentralizedAI.sol`](./apps/chat/contracts/src/interfaces/IDecentralizedAI.sol). This is the universal interface your smart contract uses to talk to the AI Oracle. It exposes four functions:
+
+| Function | Description |
+|---|---|
+| `requestInference(string query)` → `uint256 requestId` | Sends a natural-language query to the AI. Returns a unique `requestId` you use to track and retrieve the result. |
+| `isReady(uint256 requestId)` → `bool` | Returns `true` once the AI Agent has proposed and finalized the answer for a given request. |
+| `getResult(uint256 requestId)` → `string output` | Retrieves the finalized AI-generated answer as a plain string. |
+| `getRequest(uint256 requestId)` → `(RequestState, query, output, proposer, timestamp)` | Returns the full details of a request, including its current lifecycle state. |
+
+Every request goes through a lifecycle tracked by the `RequestState` enum:
+- **`Unproposed`** — The query has been submitted but no AI Agent has responded yet.
+- **`Proposed`** — An Agent has submitted a candidate answer and staked a bond.
+- **`InDispute`** — Another participant has challenged the proposed answer.
+- **`Finalized`** — The answer is accepted and immutable. `getResult()` will return the final output.
+
+### How Your App Contract Uses It
+
+Here is the pattern used by both `PublicChat.sol` and `GuardGame.sol`:
+
+```solidity
+import "./interfaces/IDecentralizedAI.sol";
+
+contract MyApp {
+    IDecentralizedAI public immutable inferenceService;
+
+    constructor(address inference) {
+        inferenceService = IDecentralizedAI(inference);
+    }
+
+    function askAI(string memory question) external {
+        // 1. Send the query — returns a unique requestId
+        uint256 requestId = inferenceService.requestInference(question);
+
+        // 2. Store the requestId so you can settle later
+        // ...
+    }
+
+    function settleAnswer(uint256 requestId) external {
+        // 3. Check if the answer is ready
+        require(inferenceService.isReady(requestId), "Not ready yet");
+
+        // 4. Retrieve the AI's answer
+        string memory answer = inferenceService.getResult(requestId);
+
+        // 5. Use it however you want!
+        // ...
+    }
+}
+```
+
+### The Full Request Flow
+
+```
+User (MetaMask) → Your App Contract → inferenceService.requestInference(query)
+                                              ↓
+                              Event emitted on-chain
+                                              ↓
+                              AI Agent detects event, calls OpenAI
+                                              ↓
+                              Agent calls proposeResult() + resolve()
+                                              ↓
+                              Orchestrator polls isReady(), calls settleMessage()
+                                              ↓
+                              Frontend reads the settled answer from the chain
+```
+
+## Deploying to the Cloud
+
+While `npm run dev` is perfect for local development, you can also split the app into its components and deploy them independently for a production-ready setup.
+
+### Frontend → Vercel (or any static host)
+
+The `web/` folder is a standard Vite + React app that can be deployed to Vercel, Netlify, or any static hosting provider.
+
+**Vercel Deployment Steps:**
+1. Push your code to GitHub (make sure `web/public/base-sepolia.json` is committed — it contains your deployed contract address and ABI).
+2. Go to [vercel.com](https://vercel.com), click **Add New Project**, and import your repository.
+3. Set the **Root Directory** to `hackathon-starter-kit/apps/chat/web` (or `apps/guard/web`).
+4. Add the following **Environment Variable** (under Settings → Environment Variables):
+   - **Key:** `VITE_NETWORK`  **Value:** `base-sepolia`
+   - ⚠️ Make sure to enable it for **Production** (not just Development!).
+5. Click **Deploy**.
+
+> **Important:** Every time you redeploy a new smart contract (which generates a new `base-sepolia.json`), you must commit the updated JSON file, push to GitHub, and **Redeploy** on Vercel (without build cache) so the frontend picks up the new contract address.
+
+### Orchestrator → Cloud Server (VPS + PM2)
+
+The Orchestrator is a lightweight Node.js polling loop that watches the blockchain for pending AI answers and settles them into your app contract. It runs perfectly on a small cloud server (e.g., a $4/month DigitalOcean Droplet).
+
+**Steps:**
+1. SSH into your server and clone the repository.
+2. Install dependencies:
+   ```bash
+   cd apps/chat
+   npm install && npm run install:all
+   ```
+3. Source your environment and start with PM2:
+   ```bash
+   source base-sepolia-env.sh
+   pm2 start orchestrator/src/server.mjs --name "chat-orchestrator"
+   ```
+4. View logs anytime: `pm2 logs chat-orchestrator`
+
+> **Tip:** The Orchestrator and the Vercel frontend **must** point to the same contract address. Both read from the same `base-sepolia.json` file, so always `git pull` on your server after redeploying a contract and run `pm2 restart chat-orchestrator`.
 
 ## Troubleshooting
 
@@ -93,3 +196,9 @@ Both the Chat and Guard reference apps interact with the AI Oracle through a sta
 If MetaMask is stuck loading or fails to connect to the Base Sepolia network, it means the default public RPC (`https://sepolia.base.org`) is congested or down. To fix this, click "Update RPC" in MetaMask (or go to Settings -> Networks -> Base Sepolia) and change the **New RPC URL** to one of these reliable public backups:
 - `https://base-sepolia-rpc.publicnode.com`
 - `https://base-sepolia.blockpi.network/v1/rpc/public`
+
+### Vercel: Page loads but app is stuck / "localhost.json 404"
+This means the `VITE_NETWORK` environment variable is missing or not set for the **Production** environment. Go to Vercel Settings → Environment Variables, set `VITE_NETWORK=base-sepolia` with the **Production** checkbox enabled, and **Redeploy without build cache**.
+
+### Orchestrator settles but frontend doesn't update
+Make sure both the Orchestrator and the frontend's `web/public/base-sepolia.json` file contain the **same contract address**. If you redeployed the contract, update both sides.
