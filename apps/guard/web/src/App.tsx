@@ -132,9 +132,6 @@ export default function App() {
         }
 
         const config = (await response.json()) as DeploymentConfig;
-        if (import.meta.env.VITE_RPC_URL) {
-          config.rpcUrl = import.meta.env.VITE_RPC_URL;
-        }
         setDeployment(config);
         setStatus("Ready");
       } catch (error) {

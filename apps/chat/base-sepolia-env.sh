@@ -1,17 +1,18 @@
 #!/bin/bash
-
-# Load environment variables from .env if it exists
-if [ -f .env ]; then
-  export $(grep -v '^#' .env | xargs)
-fi
-
-if [ -z "$PRIVATE_KEY" ] || [ -z "$RPC_URL" ]; then
-  echo "Error: PRIVATE_KEY and RPC_URL must be set."
-  echo "Please copy .env.example to .env and fill in your details."
-  return 1 2>/dev/null || exit 1
-fi
-
 export NETWORK=base-sepolia
+export RPC_URL="https://sepolia.base.org"
+ROOT_DIR=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+if [ -f "$ROOT_DIR/.env" ]; then
+    set -a
+    source "$ROOT_DIR/.env"
+    set +a
+fi
+
+if [ -z "$PRIVATE_KEY" ]; then
+    echo "ERROR: PRIVATE_KEY is not set. Please copy .env-example to .env at the root of the project and set your private key."
+    return 1 2>/dev/null || exit 1
+fi
+
+export PRIVATE_KEY=$PRIVATE_KEY
 export VITE_NETWORK=base-sepolia
-export VITE_RPC_URL="$RPC_URL"
-export INFERENCE_ADDRESS="0xb7c2d85259d676b0dfbf932e992f8408f5b42b68"
+export INFERENCE_ADDRESS="0xb189678014ae6568319efe4dfd8df12857871444"

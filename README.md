@@ -18,22 +18,6 @@ Each app in the `apps/` directory is an independent, full-stack Web3 application
 - `orchestrator/`: A Node.js background worker that polls the Oracle and settles answers.
 - `web/`: A modern Vite + React frontend powered by `ethers.js`.
 
-## Prerequisites
-
-Before getting started, make sure you have the following installed and set up:
-
-### System Requirements
-- **Node.js & npm**: Required to run the frontend, the orchestrator, and install dependencies.
-- **[Foundry](https://getfoundry.sh/)**: Required to compile, test, and deploy the smart contracts (`forge`, `anvil`, `cast`).
-
-### Web3 Requirements
-- **MetaMask (or compatible Web3 Wallet)**: A browser extension to interact with the frontend.
-- **Developer Private Key**: A wallet private key to deploy contracts and run the orchestrator.
-- **Base Sepolia ETH**: Testnet tokens to pay for gas on the Base Sepolia network. (You can get these from a Base faucet or bridge from Sepolia).
-- **RPC Provider URL (Optional but recommended)**: The starter kit provides the free public Base RPC (`https://sepolia.base.org`) by default. However, you can create a free Alchemy account to get a dedicated Base Sepolia RPC URL to avoid rate limits and speed up your app.
-
-*Note: You **do not** need to deploy the AI Oracle yourself. The starter kit apps point to the globally deployed Cadabra `AbraInference` Oracle on Base Sepolia.*
-
 ## How to Run an Example
 
 Let's use the `chat` app as an example.
@@ -43,11 +27,8 @@ Let's use the `chat` app as an example.
    ```bash
    cd apps/chat
    ```
-2. Copy the `.env.example` file to a new file named `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-3. Open `.env` and fill in your MetaMask private key. You can leave the default public Base Sepolia RPC URL as is, or uncomment and swap it for your own Alchemy URL for better performance.
+2. Open `sepolia-env.sh` and replace the `PRIVATE_KEY` with your own MetaMask private key (Make sure you have Sepolia ETH!).
+3. The `INFERENCE_ADDRESS` is already hardcoded to the global `AbraInference` Oracle on Sepolia. Do not change this unless you deployed your own oracle.
 
 ### 2. Install Dependencies
 Install all necessary packages across the contracts, orchestrator, and web frontend:
@@ -59,15 +40,22 @@ npm run install:all
 ### 3. Start the App
 Load your wallet configuration and start the app:
 ```bash
-source base-sepolia-env.sh
+source sepolia-env.sh
 npm run dev
 ```
 
 This single command will:
-1. Compile and deploy your smart contract to Base Sepolia.
+1. Compile and deploy your smart contract to Sepolia.
 2. Start the Orchestrator loop in the background.
 3. Start the React frontend on `http://localhost:5173`.
 
 ---
 
-> **Tip:** We recommend using the **MetaMask** browser extension. Make sure to switch your network to **Base Sepolia** to interact with the frontend!
+> **Tip:** We recommend using the **MetaMask** browser extension. Make sure to switch your network to **Sepolia** (or **Base Sepolia**) to interact with the frontend!
+
+## Troubleshooting
+
+### MetaMask "Still connecting to Base Sepolia Testnet" / "Update RPC" Error
+If MetaMask is stuck loading or fails to connect to the Base Sepolia network, it means the default public RPC (`https://sepolia.base.org`) is congested or down. To fix this, click "Update RPC" in MetaMask (or go to Settings -> Networks -> Base Sepolia) and change the **New RPC URL** to one of these reliable public backups:
+- `https://base-sepolia-rpc.publicnode.com`
+- `https://base-sepolia.blockpi.network/v1/rpc/public`

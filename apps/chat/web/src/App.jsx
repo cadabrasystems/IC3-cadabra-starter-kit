@@ -1,9 +1,34 @@
 import { useState, useEffect, useRef } from 'react';
-import { BrowserProvider, Contract } from 'ethers';
+import { createWalletClient, createPublicClient, custom, getContract } from 'viem';
 import './index.css';
 
-const DEV_PRIVATE_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 const NETWORK = import.meta.env.VITE_NETWORK || "localhost";
+
+async function ensureWalletChain(walletClient, deployment) {
+  const expectedChainId = deployment.chainId;
+  const currentChainId = await walletClient.getChainId();
+  if (currentChainId === expectedChainId) {
+    return;
+  }
+
+  try {
+    await walletClient.switchChain({ id: expectedChainId });
+    return;
+  } catch (error) {
+    if (error.code !== 4902) {
+      throw error;
+    }
+  }
+
+  await walletClient.addChain({
+    chain: {
+      id: expectedChainId,
+      name: expectedChainId === 84532 ? "Base Sepolia" : `Chain ${expectedChainId}`,
+      nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+      rpcUrls: { default: { http: [deployment.rpcUrl] } }
+    }
+  });
+}
 
 export default function App() {
   const [conversations, setConversations] = useState([]);
@@ -12,42 +37,55 @@ export default function App() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [contract, setContract] = useState(null);
+  const [walletClient, setWalletClient] = useState(null);
+  const [publicClient, setPublicClient] = useState(null);
   const messagesEndRef = useRef(null);
 
-  // Initialize Ethers
+  // Initialize Viem
   useEffect(() => {
-    const initEthers = async () => {
+    const initViem = async () => {
       try {
         const res = await fetch(`/${NETWORK}.json`);
         const config = await res.json();
-        
-        if (import.meta.env.VITE_RPC_URL) {
-          config.rpcUrl = import.meta.env.VITE_RPC_URL;
-        }
 
-        let provider;
-        let signer;
-        
         if (window.ethereum) {
-          provider = new BrowserProvider(window.ethereum);
-          await provider.send("eth_requestAccounts", []);
-          signer = await provider.getSigner();
+          const customChain = {
+            id: config.chainId,
+            name: config.chainId === 84532 ? 'Base Sepolia' : `Chain ${config.chainId}`,
+            nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+            rpcUrls: { default: { http: [config.rpcUrl] } },
+          };
+
+          const wClient = createWalletClient({
+            chain: customChain,
+            transport: custom(window.ethereum)
+          });
+          const pClient = createPublicClient({
+            chain: customChain,
+            transport: custom(window.ethereum)
+          });
+          
+          await wClient.requestAddresses();
+          await ensureWalletChain(wClient, config);
+          
+          setWalletClient(wClient);
+          setPublicClient(pClient);
+
+          const chatContract = getContract({
+            address: config.chat.address,
+            abi: config.chat.abi,
+            client: { public: pClient, wallet: wClient }
+          });
+          setContract(chatContract);
         } else {
           console.warn("No Web3 wallet found, falling back to read-only mode");
           return;
         }
-
-        const chatContract = new Contract(
-          config.chat.address,
-          config.chat.abi,
-          signer
-        );
-        setContract(chatContract);
       } catch (e) {
         console.error("Failed to load network config:", e);
       }
     };
-    initEthers();
+    initViem();
   }, []);
 
   // Poll for conversations and active chat messages
@@ -56,28 +94,15 @@ export default function App() {
 
     const fetchState = async () => {
       try {
-        const chats = await contract.getChats();
+        const chats = await contract.read.getChats();
         setConversations(chats.map(c => ({ id: Number(c.id), title: c.title })));
 
         if (activeChatId) {
-          const msgs = await contract.getMessages(activeChatId);
-          setMessages(msgs.map(m => {
-            let displayContent = m.content;
-            if (m.role === 'agent') {
-              try {
-                const parsed = JSON.parse(m.content);
-                if (parsed && parsed.response) {
-                  displayContent = parsed.response;
-                }
-              } catch (e) {
-                // Content is not JSON, display raw content
-              }
-            }
-            return {
-              role: m.role,
-              content: displayContent
-            };
-          }));
+          const msgs = await contract.read.getMessages([BigInt(activeChatId)]);
+          setMessages(msgs.map(m => ({
+            role: m.role,
+            content: m.content
+          })));
 
           // Check if it's waiting for an agent
           const chatDetails = chats.find(c => Number(c.id) === activeChatId);
@@ -103,11 +128,13 @@ export default function App() {
   }, [messages]);
 
   const handleNewChat = async () => {
-    if (!contract) return;
+    if (!contract || !walletClient || !publicClient) return;
     try {
+      const [account] = await walletClient.getAddresses();
       const title = `Chat ${conversations.length + 1}`;
-      const tx = await contract.createChat(title);
-      await tx.wait();
+      const txHash = await contract.write.createChat([title], { account });
+      await publicClient.waitForTransactionReceipt({ hash: txHash });
+      
       // It will update on next poll, but we can set activeChatId speculatively
       setActiveChatId(conversations.length + 1);
     } catch (err) {
@@ -117,7 +144,7 @@ export default function App() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!inputValue.trim() || !activeChatId || isLoading || !contract) return;
+    if (!inputValue.trim() || !activeChatId || isLoading || !contract || !walletClient || !publicClient) return;
 
     const content = inputValue.trim();
     setInputValue('');
@@ -127,8 +154,9 @@ export default function App() {
     setMessages(prev => [...prev, { role: 'user', content }]);
 
     try {
-      const tx = await contract.sendMessage(activeChatId, content);
-      await tx.wait();
+      const [account] = await walletClient.getAddresses();
+      const txHash = await contract.write.sendMessage([BigInt(activeChatId), content], { account });
+      await publicClient.waitForTransactionReceipt({ hash: txHash });
     } catch (err) {
       console.error(err);
       setIsLoading(false);
