@@ -62,7 +62,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function main() {
   while (true) {
     await checkPendingRequests();
-    await sleep(2000);
+    await sleep(500);
   }
 }
 

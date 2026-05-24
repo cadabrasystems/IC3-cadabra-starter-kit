@@ -122,11 +122,11 @@ contract PublicChat {
 
     function _buildPrompt(uint256 chatId) internal view returns (string memory) {
         Chat storage chat = chats[chatId];
-        string memory prompt = "";
+        string memory prompt = "You are a helpful AI assistant. Complete the conversation below by providing the next message for the 'agent'. Do not prefix your response with 'agent:', just provide the message content.\n\nConversation so far:\n";
         for (uint256 i = 0; i < chat.messageCount; i++) {
             Message storage m = chatMessages[chatId][i];
             prompt = string.concat(prompt, m.role, ": ", m.content, "\n");
         }
-        return prompt;
+        return string.concat(prompt, "agent: ");
     }
 }
