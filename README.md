@@ -16,19 +16,22 @@ This template contains two working reference implementations to help you get sta
 Each app in the `apps/` directory is an independent, full-stack Web3 application containing:
 - `contracts/`: A Foundry project containing the Smart Contracts.
 - `orchestrator/`: A Node.js background worker that polls the Oracle and settles answers.
-- `web/`: A modern Vite + React frontend powered by `ethers.js`.
+- `web/`: A modern Vite + React frontend powered by `viem`.
 
 ## How to Run an Example
 
 Let's use the `chat` app as an example.
 
 ### 1. Configure Your Wallet
-1. Navigate to the app directory:
+1. Copy the `.env-example` file to `.env` at the root of the project and add your own MetaMask `PRIVATE_KEY` (Make sure you have Base Sepolia ETH!).
+   ```bash
+   cp .env-example .env
+   ```
+2. Navigate to the app directory:
    ```bash
    cd apps/chat
    ```
-2. Open `sepolia-env.sh` and replace the `PRIVATE_KEY` with your own MetaMask private key (Make sure you have Sepolia ETH!).
-3. The `INFERENCE_ADDRESS` is already hardcoded to the global `AbraInference` Oracle on Sepolia. Do not change this unless you deployed your own oracle.
+3. The `INFERENCE_ADDRESS` is already hardcoded to the global `AbraInference` Oracle on Base Sepolia. Do not change this unless you deployed your own oracle.
 
 ### 2. Install Dependencies
 Install all necessary packages across the contracts, orchestrator, and web frontend:
