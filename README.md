@@ -56,6 +56,27 @@ This single command will:
 
 > **Tip:** We recommend using the **MetaMask** browser extension. Make sure to switch your network to **Base Sepolia** to interact with the frontend!
 
+## Network & Faucets
+
+To deploy contracts and interact with the applications, you will need **Base Sepolia ETH**. 
+
+1. **Get Sepolia ETH**: First, claim free testnet ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia).
+2. **Bridge to Base Sepolia**: Once you have Sepolia ETH, bridge it over to the Base Sepolia network using the official [Base Bridge](https://bridge.base.org/deposit).
+
+## MetaMask Configuration & Frontend
+
+The frontend applications are perfectly designed for hackathon users and automatically handle network configuration. When a user connects their MetaMask wallet, the app uses `viem` and `wagmi` to check their current network. 
+
+If they are not on Base Sepolia, the frontend will automatically prompt MetaMask to switch networks, or gracefully inject the Base Sepolia network configuration into their wallet if they don't already have it installed!
+
+## Architecture: How Apps Access the AI
+
+Both the Chat and Guard reference apps interact with the AI Oracle through a standard interface, making it incredibly easy to build your own dApps.
+
+1. **The Oracle Interface**: Inside your app's contract folder, you will find `IDecentralizedAI.sol`. This abstract contract/interface defines the standard `requestInference(string query)` function.
+2. **The App Contracts**: Contracts like `PublicChat.sol` and `GuardGame.sol` import this interface and initialize a pointer to the global `AbraInference` Oracle during deployment.
+3. **Triggering the AI**: When a user submits a message, the app contract simply calls `inference.requestInference(query)`. This emits an event on the blockchain, which the central AI Agent instantly detects, processes via OpenAI, and resolves the answer back on-chain!
+
 ## Troubleshooting
 
 ### MetaMask "Still connecting to Base Sepolia Testnet" / "Update RPC" Error
