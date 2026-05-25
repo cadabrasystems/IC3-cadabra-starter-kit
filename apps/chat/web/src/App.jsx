@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createWalletClient, createPublicClient, custom, getContract } from 'viem';
 import './index.css';
 
-const NETWORK = import.meta.env.VITE_NETWORK || "localhost";
+const NETWORK = import.meta.env.VITE_NETWORK || "sepolia";
 
 async function ensureWalletChain(walletClient, deployment) {
   const expectedChainId = deployment.chainId;

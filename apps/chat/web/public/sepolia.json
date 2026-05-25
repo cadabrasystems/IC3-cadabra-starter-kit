@@ -1,6 +1,6 @@
 {
   "chainId": 11155111,
-  "rpcUrl": "https://ethereum-sepolia-rpc.publicnode.com",
+  "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/OELGPzZq0d5tou9QsWnTb",
   "inference": {
     "address": "0xbdac1b0f60db1a3461f53a69332c4cc06c724a0b",
     "abi": [

@@ -6,17 +6,17 @@ Your smart contracts can ask an AI a question and receive an answer — all full
 
 ## Quick Start — What You Need to Know
 
-### The Network: Base Sepolia
+### The Network: Sepolia
 
-All development happens on **Base Sepolia**, a free testnet for the Base L2 blockchain. You will deploy contracts, send transactions, and interact with the AI Oracle entirely on this network. It costs nothing — all ETH used is free testnet ETH.
+All development happens on **Sepolia**, a free testnet for the Ethereum blockchain. You will deploy contracts, send transactions, and interact with the AI Oracle entirely on this network. It costs nothing — all ETH used is free testnet ETH.
 
 | Detail | Value |
 |---|---|
-| **Network Name** | Base Sepolia |
-| **Chain ID** | `84532` |
+| **Network Name** | Sepolia |
+| **Chain ID** | `11155111` |
 | **Currency** | ETH (testnet) |
-| **Block Explorer** | [sepolia.basescan.org](https://sepolia.basescan.org) |
-| **Public RPC** | `https://base-sepolia-rpc.publicnode.com` |
+| **Block Explorer** | [sepolia.etherscan.io](https://sepolia.etherscan.io) |
+| **Public RPC** | `https://ethereum-sepolia-rpc.publicnode.com` |
 
 ### Step 1: Set Up MetaMask
 
@@ -97,12 +97,12 @@ npm run install:all
 ### 3. Start the App
 Load your wallet configuration and start the app:
 ```bash
-source base-sepolia-env.sh
+source sepolia-env.sh
 npm run dev
 ```
 
 This single command will:
-1. Compile and deploy your smart contract to Base Sepolia.
+1. Compile and deploy your smart contract to Sepolia.
 2. Start the React frontend on `http://localhost:5173`.
 
 Open `http://localhost:5173` in your browser, connect MetaMask, and start chatting with the AI!
@@ -192,25 +192,24 @@ Since the frontend reads AI answers directly from the Oracle (no backend needed!
 The `web/` folder is a standard Vite + React app that can be deployed to Vercel, Netlify, GitHub Pages, or any static hosting provider.
 
 **Vercel Deployment Steps:**
-1. Push your code to GitHub (make sure `web/public/base-sepolia.json` is committed — it contains your deployed contract address and ABI).
+1. Push your code to GitHub (make sure `web/public/sepolia.json` is committed — it contains your deployed contract address and ABI).
 2. Go to [vercel.com](https://vercel.com), click **Add New Project**, and import your repository.
 3. Set the **Root Directory** to your app's `web` folder (e.g. `hackathon-starter-kit/apps/chat/web`).
 4. Add the following **Environment Variable** (under Settings → Environment Variables):
-   - **Key:** `VITE_NETWORK`  **Value:** `base-sepolia`
+   - **Key:** `VITE_NETWORK`  **Value:** `sepolia`
    - ⚠️ Make sure to enable it for **Production** (not just Development!).
 5. Click **Deploy**.
 
-> **Important:** Every time you redeploy a new smart contract (which generates a new `base-sepolia.json`), you must commit the updated JSON file, push to GitHub, and **Redeploy** on Vercel (without build cache) so the frontend picks up the new contract address.
+> **Important:** Every time you redeploy a new smart contract (which generates a new `sepolia.json`), you must commit the updated JSON file, push to GitHub, and **Redeploy** on Vercel (without build cache) so the frontend picks up the new contract address.
 
 ## Troubleshooting
 
-### MetaMask "Still connecting to Base Sepolia Testnet" / "Update RPC" Error
-If MetaMask is stuck loading or fails to connect to the Base Sepolia network, it means the default public RPC (`https://sepolia.base.org`) is congested or down. To fix this, click "Update RPC" in MetaMask (or go to Settings -> Networks -> Base Sepolia) and change the **New RPC URL** to one of these reliable public backups:
-- `https://base-sepolia-rpc.publicnode.com`
-- `https://base-sepolia.blockpi.network/v1/rpc/public`
+### MetaMask "Still connecting to Sepolia Testnet" / "Update RPC" Error
+If MetaMask is stuck loading or fails to connect to the Sepolia network, it means the default public RPC is congested or down. To fix this, click "Update RPC" in MetaMask (or go to Settings -> Networks -> Sepolia) and change the **New RPC URL** to one of these reliable public backups:
+- `https://ethereum-sepolia-rpc.publicnode.com`
 
 ### Vercel: Page loads but app is stuck / "localhost.json 404"
-This means the `VITE_NETWORK` environment variable is missing or not set for the **Production** environment. Go to Vercel Settings → Environment Variables, set `VITE_NETWORK=base-sepolia` with the **Production** checkbox enabled, and **Redeploy without build cache**.
+This means the `VITE_NETWORK` environment variable is missing or not set for the **Production** environment. Go to Vercel Settings → Environment Variables, set `VITE_NETWORK=sepolia` with the **Production** checkbox enabled, and **Redeploy without build cache**.
 
 ## Live Demo
 
@@ -218,4 +217,4 @@ Check out a live, working deployment of the Chat App to see exactly what you'll 
 
 🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-copy-ejwp.vercel.app/)**
 
-Connect your MetaMask wallet (on the Base Sepolia network), send a message, and watch the decentralized AI respond in real-time!
+Connect your MetaMask wallet (on the Sepolia network), send a message, and watch the decentralized AI respond in real-time!

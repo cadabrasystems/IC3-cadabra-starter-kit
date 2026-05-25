@@ -125,7 +125,7 @@ export default function App() {
   useEffect(() => {
     const load = async () => {
       try {
-        const network = import.meta.env.VITE_NETWORK || "localhost";
+        const network = import.meta.env.VITE_NETWORK || "sepolia";
         const response = await fetch(`/${network}.json`, { cache: "no-store" });
         if (!response.ok) {
           throw new Error("Missing deployment file. Run local deploy first.");
