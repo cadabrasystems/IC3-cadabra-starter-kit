@@ -21,15 +21,14 @@ All development happens on **Sepolia**, a free testnet for the Ethereum blockcha
 ### Step 1: Set Up MetaMask
 
 1. Install the [MetaMask browser extension](https://metamask.io/download/) if you don't have it.
-2. **You do NOT need to manually add the Base Sepolia network.** When you open any of our frontend apps and connect your wallet, the app will automatically detect your network and prompt MetaMask to switch to Base Sepolia (or add it for you if it's missing).
+2. **You do NOT need to manually add the Sepolia network.** When you open any of our frontend apps and connect your wallet, the app will automatically detect your network and prompt MetaMask to switch to Sepolia (or add it for you if it's missing).
 3. If you prefer to add it manually: Open MetaMask → Settings → Networks → Add Network, and enter the details from the table above.
 
 ### Step 2: Get Free Testnet ETH
 
 You need testnet ETH to deploy contracts and send transactions. Here's how:
 
-1. **Get Sepolia ETH**: Claim free ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia). Paste your MetaMask wallet address and claim.
-2. **Bridge to Base Sepolia**: Go to the [Base Bridge](https://superbridge.app/base-sepolia), connect your wallet, switch to the Sepolia testnet, and bridge your Sepolia ETH over to Base Sepolia. This takes about 1 minute.
+1. **Get Sepolia ETH**: Claim free ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia) (or any other Sepolia faucet). Paste your MetaMask wallet address and claim.
 
 > **Tip:** You only need a small amount of ETH (0.01 - 0.05 is plenty) to deploy contracts and send messages during the hackathon.
 
@@ -69,43 +68,57 @@ Let's use the `chat` app as an example.
 
 Before starting, make sure you have:
 - **Node.js v22+** — [Download here](https://nodejs.org/)
-- **Foundry** (for compiling and deploying Solidity contracts):
+- **Foundry** (for compiling and deploying Solidity contracts, *only needed if deploying your own contract*):
   ```bash
   curl -L https://foundry.paradigm.xyz | bash
   foundryup
   ```
 
-### 1. Configure Your Wallet
-1. Copy the `.env-example` file to `.env` at the root of the project and paste in your MetaMask private key:
-   ```bash
-   cp .env-example .env
-   ```
-   Then edit `.env` and set your `PRIVATE_KEY`.
-2. Navigate to the app directory:
-   ```bash
-   cd apps/chat
-   ```
-3. The `INFERENCE_ADDRESS` is already hardcoded to the global `AbraInference` Oracle on Base Sepolia. Do not change this unless you deployed your own oracle.
+### 1. Set Up Environment
+Navigate to the app directory:
+```bash
+cd apps/chat
+```
 
 ### 2. Install Dependencies
-Install all necessary packages across the contracts, orchestrator, and web frontend:
+Install all necessary packages:
 ```bash
 npm install
 npm run install:all
 ```
 
-### 3. Start the App
-Load your wallet configuration and start the app:
+### 3. Start the Web App
+The repository comes with a pre-deployed smart contract on Sepolia, so you can immediately start the frontend without deploying anything yourself!
+
 ```bash
-source sepolia-env.sh
-npm run dev
+npm --prefix web run dev
 ```
 
-This single command will:
-1. Compile and deploy your smart contract to Sepolia.
-2. Start the React frontend on `http://localhost:5173`.
-
 Open `http://localhost:5173` in your browser, connect MetaMask, and start chatting with the AI!
+
+---
+
+### (Optional) Deploy Your Own Contract
+
+If you want to modify the Solidity code and deploy your own version of the contract, you can easily do so. To protect your private key, we recommend prompting for it inline rather than saving it in an environment file.
+
+1. Load the Sepolia environment (this points the deployment script to the global AI Oracle):
+   ```bash
+   source sepolia-env.sh
+   ```
+2. Export your private key securely (this prompts you to paste it without showing it on screen or saving it in your bash history):
+   ```bash
+   read -s PRIVATE_KEY
+   export PRIVATE_KEY
+   ```
+   *(Press enter, paste your MetaMask private key, and press Enter again)*
+3. Deploy the smart contract:
+   ```bash
+   npm --prefix contracts run deploy:network
+   ```
+
+**How does the web app know about your new contract?**
+When you run the deployment script, it automatically creates or updates the `web/public/sepolia.json` file with your newly deployed contract address and ABI. The web frontend reads this file on startup, so all you need to do is refresh your browser to interact with your new contract!
 
 ## Architecture: How Apps Access the AI
 
