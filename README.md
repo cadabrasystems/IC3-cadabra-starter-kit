@@ -133,7 +133,7 @@ We provide a copy of the interface at the root of this repository for easy refer
 Every request goes through a lifecycle tracked by the `RequestState` enum:
 - **`Unproposed`** — The query has been submitted but no AI Agent has responded yet.
 - **`Proposed`** — An Agent has submitted a candidate answer and staked a bond.
-- **`InDispute`** — Another participant has challenged the proposed answer.
+- **`InDispute`** — Another agent has challenged the proposed answer.
 - **`Finalized`** — The answer is accepted and immutable. `getResult()` will return the final output.
 
 ### How Your App Contract Uses It
