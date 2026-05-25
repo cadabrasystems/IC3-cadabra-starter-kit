@@ -142,7 +142,24 @@ export default function App() {
               displayMessages.push({ role: 'agent', content: result });
               setIsLoading(false);
             } else {
-              setIsLoading(true);
+              // Check how long the request has been pending
+              const reqData = await publicClient.readContract({
+                address: inferenceAddress,
+                abi: inferenceAbi,
+                functionName: 'getRequest',
+                args: [requestId]
+              });
+              const requestTimestamp = Number(reqData[4]) || 0; // proposalTimestamp or requestedAt
+              const now = Math.floor(Date.now() / 1000);
+              const ageSeconds = now - requestTimestamp;
+
+              if (requestTimestamp > 0 && ageSeconds > 120) {
+                // Request has been pending for over 2 minutes — likely timed out
+                displayMessages.push({ role: 'agent', content: '⚠️ The AI agent did not respond to this request. Please send a new message.' });
+                setIsLoading(false);
+              } else {
+                setIsLoading(true);
+              }
             }
           } else {
             setIsLoading(false);
