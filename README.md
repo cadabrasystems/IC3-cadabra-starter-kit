@@ -32,13 +32,6 @@ You need testnet ETH to deploy contracts and send transactions. Here's how:
 
 > **Tip:** You only need a small amount of ETH (0.01 - 0.05 is plenty) to deploy contracts and send messages during the hackathon.
 
-### Step 3: Export Your Private Key
-
-The deployment scripts need your wallet's private key to sign transactions from the command line.
-
-1. Open MetaMask → Click the three dots (⋮) on your account → **Account Details** → **Show Private Key**.
-2. Copy it. You'll paste it into a `.env` file in the next step.
-
 > ⚠️ **Security Note:** Never use your real mainnet wallet for hackathon development. Create a fresh MetaMask account specifically for this event. It only holds free testnet ETH, so there is zero risk.
 
 ---
