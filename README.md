@@ -55,7 +55,9 @@ Each app in the `apps/` directory is an independent, full-stack Web3 application
 
 ## How to Run an Example
 
-Let's use the `chat` app as an example.
+Let's walk through running the **Chat App** (`apps/chat`) — a multi-user chat interface where messages are stored on-chain and answered by the decentralized AI agent.
+
+> **Note:** The repository ships with an already-deployed Chat contract on Sepolia, so you can run the frontend immediately without deploying anything yourself. If you want to modify the Solidity code and deploy your own version, see the [Deploy Your Own Contract](#optional-deploy-your-own-contract) section below.
 
 ### Prerequisites
 
@@ -68,7 +70,7 @@ Before starting, make sure you have:
   ```
 
 ### 1. Set Up Environment
-Navigate to the app directory:
+Navigate to the chat app directory:
 ```bash
 cd apps/chat
 ```
@@ -81,7 +83,7 @@ npm run install:all
 ```
 
 ### 3. Start the Web App
-The repository comes with a pre-deployed smart contract on Sepolia, so you can immediately start the frontend without deploying anything yourself!
+Since the chat contract is already deployed on Sepolia, you can start the frontend right away:
 
 ```bash
 npm --prefix web run dev
