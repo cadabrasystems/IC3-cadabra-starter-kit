@@ -4,6 +4,9 @@ import './index.css';
 
 const NETWORK = import.meta.env.VITE_NETWORK || "sepolia";
 
+// Must match PublicChat.sol REQUEST_TIMEOUT (5 minutes)
+const REQUEST_TIMEOUT_SECONDS = 300;
+
 async function ensureWalletChain(walletClient, deployment) {
   const expectedChainId = deployment.chainId;
   const currentChainId = await walletClient.getChainId();
@@ -36,6 +39,7 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState(null); // null | 'waiting' | 'slow' | 'expired'
   const [contract, setContract] = useState(null);
   const [walletClient, setWalletClient] = useState(null);
   const [publicClient, setPublicClient] = useState(null);
@@ -141,28 +145,40 @@ export default function App() {
               // Show the answer immediately in the UI
               displayMessages.push({ role: 'agent', content: result });
               setIsLoading(false);
+              setPendingStatus(null);
             } else {
-              // Check how long the request has been pending
-              const reqData = await publicClient.readContract({
-                address: inferenceAddress,
-                abi: inferenceAbi,
-                functionName: 'getRequest',
-                args: [requestId]
-              });
-              const requestTimestamp = Number(reqData[4]) || 0; // proposalTimestamp or requestedAt
+              // Use pendingRequestTimestamp from the chat struct directly
+              const pendingTimestamp = Number(chatDetails.pendingRequestTimestamp) || 0;
               const now = Math.floor(Date.now() / 1000);
-              const ageSeconds = now - requestTimestamp;
+              const ageSeconds = pendingTimestamp > 0 ? now - pendingTimestamp : 0;
 
-              if (requestTimestamp > 0 && ageSeconds > 120) {
-                // Request has been pending for over 2 minutes — likely timed out
-                displayMessages.push({ role: 'agent', content: '⚠️ The AI agent did not respond to this request. Please send a new message.' });
+              if (pendingTimestamp > 0 && ageSeconds >= REQUEST_TIMEOUT_SECONDS) {
+                // Request has expired — contract will auto-reset on next sendMessage
+                displayMessages.push({
+                  role: 'agent',
+                  content: '⚠️ The AI agent did not respond in time. The request has expired — you can send a new message now.'
+                });
                 setIsLoading(false);
+                setPendingStatus('expired');
+              } else if (pendingTimestamp > 0 && ageSeconds > 120) {
+                // Agent is slow — show countdown to auto-recovery
+                const remaining = REQUEST_TIMEOUT_SECONDS - ageSeconds;
+                const mins = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                displayMessages.push({
+                  role: 'agent',
+                  content: `⏳ The AI agent is taking longer than expected. If no response arrives, the chat will auto-recover in ${mins}:${secs.toString().padStart(2, '0')}...`
+                });
+                setIsLoading(true);
+                setPendingStatus('slow');
               } else {
                 setIsLoading(true);
+                setPendingStatus('waiting');
               }
             }
           } else {
             setIsLoading(false);
+            setPendingStatus(null);
           }
 
           setMessages(displayMessages);
@@ -268,7 +284,7 @@ export default function App() {
               {isLoading && (
                 <div className="message-wrapper agent">
                   <div className="message-bubble" style={{ opacity: 0.7 }}>
-                    Thinking...
+                    {pendingStatus === 'slow' ? '⏳ Waiting for agent...' : 'Thinking...'}
                   </div>
                 </div>
               )}

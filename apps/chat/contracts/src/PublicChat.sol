@@ -5,6 +5,7 @@ import "./interfaces/IDecentralizedAI.sol";
 
 contract PublicChat {
     IDecentralizedAI public immutable inferenceService;
+    uint256 public constant REQUEST_TIMEOUT = 5 minutes;
 
     struct Message {
         address sender;
@@ -18,6 +19,7 @@ contract PublicChat {
         string title;
         uint256 messageCount;
         uint256 pendingRequestId;
+        uint256 pendingRequestTimestamp;
     }
 
     uint256 public nextChatId = 1;
@@ -31,6 +33,7 @@ contract PublicChat {
     event MessageAdded(uint256 indexed chatId, address indexed sender, string role, string content);
     event InferenceRequested(uint256 indexed chatId, uint256 indexed requestId, string query);
     event MessageSettled(uint256 indexed chatId, uint256 indexed requestId, string content);
+    event PendingRequestExpired(uint256 indexed chatId, uint256 indexed requestId);
 
     error ChatDoesNotExist();
     error ChatIsWaitingForAgent();
@@ -46,7 +49,8 @@ contract PublicChat {
             id: chatId,
             title: title,
             messageCount: 0,
-            pendingRequestId: 0
+            pendingRequestId: 0,
+            pendingRequestTimestamp: 0
         });
 
         emit ChatCreated(chatId, title);
@@ -56,7 +60,17 @@ contract PublicChat {
     function sendMessage(uint256 chatId, string memory content) external {
         Chat storage chat = chats[chatId];
         if (chat.id == 0) revert ChatDoesNotExist();
-        if (chat.pendingRequestId != 0) revert ChatIsWaitingForAgent();
+
+        // Auto-expire stale pending requests instead of permanently blocking the chat
+        if (chat.pendingRequestId != 0) {
+            if (block.timestamp < chat.pendingRequestTimestamp + REQUEST_TIMEOUT) {
+                revert ChatIsWaitingForAgent();
+            }
+            // Request timed out — expire it and allow the new message
+            emit PendingRequestExpired(chatId, chat.pendingRequestId);
+            chat.pendingRequestId = 0;
+            chat.pendingRequestTimestamp = 0;
+        }
 
         // Add user message
         uint256 msgIndex = chat.messageCount++;
@@ -74,6 +88,7 @@ contract PublicChat {
         // Request inference
         uint256 requestId = inferenceService.requestInference(query);
         chat.pendingRequestId = requestId;
+        chat.pendingRequestTimestamp = block.timestamp;
         requestToChatId[requestId] = chatId;
 
         emit InferenceRequested(chatId, requestId, query);
@@ -98,6 +113,7 @@ contract PublicChat {
         });
 
         chat.pendingRequestId = 0;
+        chat.pendingRequestTimestamp = 0;
 
         emit MessageSettled(chatId, requestId, output);
         emit MessageAdded(chatId, address(this), "agent", output);
