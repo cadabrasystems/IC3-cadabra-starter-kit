@@ -13,16 +13,16 @@ All development happens on **Sepolia**, a free testnet for the Ethereum blockcha
 | Detail | Value |
 |---|---|
 | **Network Name** | Sepolia |
+| **Public RPC URL** | `https://ethereum-sepolia-rpc.publicnode.com` |
 | **Chain ID** | `11155111` |
-| **Currency** | ETH (testnet) |
-| **Block Explorer** | [sepolia.etherscan.io](https://sepolia.etherscan.io) |
-| **Public RPC** | `https://ethereum-sepolia-rpc.publicnode.com` |
+| **Currency Symbol** | ETH (testnet) |
+| **Block Explorer URL** | [sepolia.etherscan.io](https://sepolia.etherscan.io) |
 
 ### Step 1: Set Up MetaMask
 
 1. Install the [MetaMask browser extension](https://metamask.io/download/) if you don't have it.
-2. **You do NOT need to manually add the Sepolia network.** When you open any of our frontend apps and connect your wallet, the app will automatically detect your network and prompt MetaMask to switch to Sepolia (or add it for you if it's missing).
-3. If you prefer to add it manually: Open MetaMask → Settings → Networks → Add Network, and enter the details from the table above.
+2. **Enable Test Networks:** Sepolia is built into MetaMask by default. To see it, open MetaMask, click the network dropdown at the top left, and toggle **"Show test networks"**. Then select **Sepolia**.
+3. If you don't see it or prefer to add it manually: Open MetaMask → Settings → Networks → Add Network, and enter the details from the table above.
 
 ### Step 2: Get Free Testnet ETH
 
