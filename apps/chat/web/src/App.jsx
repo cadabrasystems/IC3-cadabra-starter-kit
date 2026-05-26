@@ -43,50 +43,65 @@ export default function App() {
   const [contract, setContract] = useState(null);
   const [walletClient, setWalletClient] = useState(null);
   const [publicClient, setPublicClient] = useState(null);
+  const [walletStatus, setWalletStatus] = useState('checking'); // 'checking' | 'not-installed' | 'rejected' | 'error' | 'connected'
   const messagesEndRef = useRef(null);
+  const settlingRef = useRef(new Set()); // track in-flight settleMessage calls
 
   // Initialize Viem
   useEffect(() => {
     const initViem = async () => {
       try {
+        if (!window.ethereum) {
+          setWalletStatus('not-installed');
+          return;
+        }
+
         const res = await fetch(`/${NETWORK}.json`);
         const config = await res.json();
 
-        if (window.ethereum) {
-          const customChain = {
-            id: config.chainId,
-            name: config.chainId === 84532 ? 'Base Sepolia' : `Chain ${config.chainId}`,
-            nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-            rpcUrls: { default: { http: [config.rpcUrl] } },
-          };
+        const customChain = {
+          id: config.chainId,
+          name: config.chainId === 84532 ? 'Base Sepolia' : `Chain ${config.chainId}`,
+          nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+          rpcUrls: { default: { http: [config.rpcUrl] } },
+        };
 
-          const wClient = createWalletClient({
-            chain: customChain,
-            transport: custom(window.ethereum)
-          });
-          const pClient = createPublicClient({
-            chain: customChain,
-            transport: custom(window.ethereum)
-          });
-          
+        const wClient = createWalletClient({
+          chain: customChain,
+          transport: custom(window.ethereum)
+        });
+        const pClient = createPublicClient({
+          chain: customChain,
+          transport: custom(window.ethereum)
+        });
+
+        try {
           await wClient.requestAddresses();
-          await ensureWalletChain(wClient, config);
-          
-          setWalletClient(wClient);
-          setPublicClient(pClient);
-
-          const chatContract = getContract({
-            address: config.chat.address,
-            abi: config.chat.abi,
-            client: { public: pClient, wallet: wClient }
-          });
-          setContract(chatContract);
-        } else {
-          console.warn("No Web3 wallet found, falling back to read-only mode");
+        } catch (connErr) {
+          // User rejected the connection request
+          if (connErr.code === 4001) {
+            setWalletStatus('rejected');
+          } else {
+            setWalletStatus('error');
+          }
           return;
         }
+
+        await ensureWalletChain(wClient, config);
+
+        setWalletClient(wClient);
+        setPublicClient(pClient);
+
+        const chatContract = getContract({
+          address: config.chat.address,
+          abi: config.chat.abi,
+          client: { public: pClient, wallet: wClient }
+        });
+        setContract(chatContract);
+        setWalletStatus('connected');
       } catch (e) {
-        console.error("Failed to load network config:", e);
+        console.error("Failed to initialize:", e);
+        setWalletStatus('error');
       }
     };
     initViem();
@@ -146,6 +161,24 @@ export default function App() {
               displayMessages.push({ role: 'agent', content: result });
               setIsLoading(false);
               setPendingStatus(null);
+
+              // Settle the message on-chain so it persists in chat history
+              // This allows old chats to be continued without losing AI responses
+              const settleKey = requestId.toString();
+              if (walletClient && !settlingRef.current.has(settleKey)) {
+                settlingRef.current.add(settleKey);
+                (async () => {
+                  try {
+                    const [account] = await walletClient.getAddresses();
+                    const txHash = await contract.write.settleMessage([requestId], { account });
+                    await publicClient.waitForTransactionReceipt({ hash: txHash });
+                  } catch (settleErr) {
+                    console.warn('settleMessage failed (may already be settled):', settleErr.message);
+                  } finally {
+                    settlingRef.current.delete(settleKey);
+                  }
+                })();
+              }
             } else {
               // Use pendingRequestTimestamp from the chat struct directly
               const pendingTimestamp = Number(chatDetails.pendingRequestTimestamp) || 0;
@@ -234,6 +267,92 @@ export default function App() {
     }
   };
 
+  const handleConnectWallet = () => {
+    setWalletStatus('checking');
+    // Re-run initialization
+    window.location.reload();
+  };
+
+  // Wallet connection overlay
+  if (walletStatus !== 'connected' && walletStatus !== 'checking') {
+    return (
+      <div className="app-container">
+        <div className="wallet-overlay">
+          <div className="wallet-modal glass-panel">
+            <div className="wallet-icon">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="url(#walletGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <defs>
+                  <linearGradient id="walletGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#8a2be2" />
+                    <stop offset="100%" stopColor="#4a00e0" />
+                  </linearGradient>
+                </defs>
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                <line x1="1" y1="10" x2="23" y2="10"></line>
+              </svg>
+            </div>
+            {walletStatus === 'not-installed' && (
+              <>
+                <h2>MetaMask Not Detected</h2>
+                <p className="wallet-desc">Install the MetaMask browser extension to use this app, then refresh the page.</p>
+                <div className="wallet-actions">
+                  <a
+                    href="https://metamask.io/download/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="wallet-btn primary"
+                  >
+                    Install MetaMask
+                  </a>
+                  <button className="wallet-btn secondary" onClick={handleConnectWallet}>
+                    Refresh Page
+                  </button>
+                </div>
+              </>
+            )}
+            {walletStatus === 'rejected' && (
+              <>
+                <h2>Connection Rejected</h2>
+                <p className="wallet-desc">You declined the wallet connection request. Click below to try again.</p>
+                <div className="wallet-actions">
+                  <button className="wallet-btn primary" onClick={handleConnectWallet}>
+                    Try Again
+                  </button>
+                </div>
+              </>
+            )}
+            {walletStatus === 'error' && (
+              <>
+                <h2>Connection Failed</h2>
+                <p className="wallet-desc">Something went wrong connecting to your wallet. Make sure MetaMask is unlocked and try again.</p>
+                <div className="wallet-actions">
+                  <button className="wallet-btn primary" onClick={handleConnectWallet}>
+                    Retry Connection
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state while checking wallet
+  if (walletStatus === 'checking') {
+    return (
+      <div className="app-container">
+        <div className="wallet-overlay">
+          <div className="wallet-modal glass-panel">
+            <div className="wallet-spinner"></div>
+            <h2>Connecting Wallet...</h2>
+            <p className="wallet-desc">Waiting for MetaMask approval.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app-container">
       {/* Sidebar */}
@@ -315,7 +434,6 @@ export default function App() {
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
             <h2>Select or start a new conversation</h2>
-            {!contract && <p style={{fontSize: '0.9rem'}}>Please connect your Web3 wallet.</p>}
           </div>
         )}
       </div>
