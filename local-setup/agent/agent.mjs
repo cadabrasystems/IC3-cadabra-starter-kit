@@ -49,7 +49,7 @@ async function getAgentResponse(query) {
   // TO DO: Replace this mock implementation with an actual call to your 
   // preferred AI provider (e.g., OpenAI, Anthropic, Ollama API, etc.)
   
-  const mockResponse = `[Mock Agent Reply] I received your prompt: "${query}".\n\nTo make me smarter, open local-setup/agent/agent.mjs and replace getAgentResponse() with your own logic to call OpenAI, Anthropic, or a local Ollama model!`;
+  const mockResponse = `[Mock Agent Reply] I received your prompt: "${query}".\n\nTo make me smarter for your testing, open local-setup/agent/agent.mjs and replace getAgentResponse() with your own logic to call OpenAI, Anthropic, or a local Ollama model!`;
   
   console.log(`[Agent] Answering with: "${mockResponse}"`);
   return mockResponse;

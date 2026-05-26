@@ -184,7 +184,7 @@ If you prefer to develop locally without spending testnet Sepolia ETH or waiting
    2. Paste Anvil's default private key (Account #1): `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d`. This account has 10,000 local ETH.
 
 > [!TIP]
-> **Customizing the Agent:** The local agent provided in `local-setup/agent/agent.mjs` simply echoes back your prompts. Open that file and modify the `getAgentResponse(query)` function to connect to OpenAI, Ollama, Anthropic, or any other AI provider you want to use!
+> **Customizing the Local Agent for Testing:** The local agent provided in `local-setup/agent/agent.mjs` simply echoes back your prompts. Open that file and replace the `getAgentResponse(query)` function to connect to a cool cloud provider (OpenAI, Anthropic) or run an AI locally (Ollama) to test different apps!
 
 ---
 
