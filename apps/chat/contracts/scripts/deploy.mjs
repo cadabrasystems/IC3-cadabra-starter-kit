@@ -32,10 +32,17 @@ const chatReceipt = await publicClient.waitForTransactionReceipt({
   hash: chatHash
 });
 
+// Use a public RPC for the frontend config - don't leak private API keys
+const PUBLIC_RPC_URLS = {
+  11155111: "https://ethereum-sepolia-rpc.publicnode.com",
+  84532: "https://base-sepolia-rpc.publicnode.com",
+};
 const chainId = await publicClient.getChainId();
+const frontendRpcUrl = PUBLIC_RPC_URLS[chainId] || CURRENT_RPC_URL;
+
 writeDeployment({
   chainId,
-  rpcUrl: CURRENT_RPC_URL,
+  rpcUrl: frontendRpcUrl,
   inference: {
     address: inferenceAddress,
     abi: inferenceArtifact.abi
