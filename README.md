@@ -277,6 +277,6 @@ This means the `VITE_NETWORK` environment variable is missing or not set for the
 
 Check out a live, working deployment of the Chat App to see exactly what you'll be building:
 
-🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-for-vercel.vercel.app/)**
+🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-for-vercel-ten.vercel.app)**
 
 Connect your MetaMask wallet (on the Sepolia network), send a message, and watch the decentralized AI respond in real-time!
