@@ -41,12 +41,10 @@ You need testnet ETH to deploy contracts and send transactions. Here's how:
 
 ## Included Reference Apps
 
-This template contains two working reference implementations to help you get started immediately:
+This template contains a working reference implementation to help you get started immediately:
 
 1. **[Public Chat App (`apps/chat`)](./apps/chat)**
    A classic multi-user interface where messages are stored on-chain and answered by the decentralized AI agent.
-2. **[Guard Game (`apps/guard`)](./apps/guard)**
-   A commit-reveal game where users attempt to jailbreak a system prompt guarded by the AI agent.
 
 ## Folder Structure
 
@@ -190,7 +188,7 @@ If you prefer to develop locally without spending testnet Sepolia ETH or waiting
 
 ## Architecture: How Apps Access the AI
 
-Both the Chat and Guard reference apps interact with the AI inference service through a standard Solidity interface, making it incredibly easy to build your own dApps on top of the same infrastructure.
+The Chat reference app interacts with the AI inference service through a standard Solidity interface, making it incredibly easy to build your own dApps on top of the same infrastructure.
 
 The core idea is simple: your smart contract sends a **plain-text prompt** (any string - a question, instruction, or conversation history) to the inference service, and receives back a **plain-text answer** from an AI agent. The prompt is just text; there is no special format required. You request an inference, then later check its state - once finalized, the result (the AI's response) is available to read on-chain.
 
@@ -213,7 +211,7 @@ Every request goes through a lifecycle tracked by the `RequestState` enum:
 
 ### How Your App Contract Uses It
 
-Here is the pattern used by both `PublicChat.sol` and `GuardGame.sol`:
+Here is the pattern used by `PublicChat.sol`:
 
 ```solidity
 import "./interfaces/IDecentralizedAI.sol";
