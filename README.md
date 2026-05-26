@@ -159,10 +159,29 @@ If you prefer to develop locally without spending testnet Sepolia ETH or waiting
    ```
 
    **Using MetaMask with Anvil:**
-   To interact with your local apps via the browser, you need to import one of Anvil's pre-funded accounts into MetaMask:
-   1. Open MetaMask and switch the network to **Localhost 8545**.
-   2. Click your account icon → **Import Account**.
-   3. Paste Anvil's default private key (Account #1): `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d`. This account has 10,000 local ETH.
+   To interact with your local apps via the browser, you must connect MetaMask to your Anvil node and fund your account.
+
+   *Step 1: Connect to Localhost*
+   1. Open MetaMask and click the network dropdown at the top left.
+   2. Select **Add network** → **Add a network manually**.
+   3. Enter the following details:
+      - Network name: `Localhost 8545`
+      - New RPC URL: `http://127.0.0.1:8545`
+      - Chain ID: `31337`
+      - Currency symbol: `ETH`
+   4. Save and switch to this network.
+
+   *Step 2: Get Local ETH (Two Options)*
+   **Option A: Fund your existing account (Recommended)**
+   Keep using your normal MetaMask account. While Anvil is running, open a new terminal and "airdrop" yourself 100 fake ETH by running:
+   ```bash
+   cast send YOUR_METAMASK_PUBLIC_ADDRESS --value 100ether --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+   ```
+   *(Note: Replace `YOUR_METAMASK_PUBLIC_ADDRESS` with your actual 0x address. `cast` is installed automatically with Foundry).*
+
+   **Option B: Import an Anvil account**
+   1. In MetaMask, click your account icon → **Import Account**.
+   2. Paste Anvil's default private key (Account #1): `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d`. This account has 10,000 local ETH.
 
 > [!TIP]
 > **Customizing the Agent:** The local agent provided in `local-setup/agent/agent.mjs` simply echoes back your prompts. Open that file and modify the `getAgentResponse(query)` function to connect to OpenAI, Ollama, Anthropic, or any other AI provider you want to use!
