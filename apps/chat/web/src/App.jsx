@@ -267,7 +267,7 @@ export default function App() {
       const title = `Chat ${conversations.length + 1}`;
       const txHash = await contract.write.createChat([title], { account });
       await publicClient.waitForTransactionReceipt({ hash: txHash });
-      
+
       // It will update on next poll, but we can set activeChatId speculatively
       setActiveChatId(conversations.length + 1);
     } catch (err) {
@@ -323,8 +323,8 @@ export default function App() {
         </div>
         <div className="conversation-list">
           {conversations.map(conv => (
-            <div 
-              key={conv.id} 
+            <div
+              key={conv.id}
               className={`conversation-item ${activeChatId === conv.id ? 'active' : ''}`}
               onClick={() => setActiveChatId(conv.id)}
             >
@@ -366,10 +366,10 @@ export default function App() {
             </div>
             <div className="input-area">
               <form className="input-container" onSubmit={handleSendMessage}>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="chat-input"
-                  placeholder={isWalletConnected ? "Type a message..." : "Connect wallet to chat..."} 
+                  placeholder={isWalletConnected ? "Type a message..." : "Connect wallet to chat..."}
                   value={inputValue}
                   onChange={e => setInputValue(e.target.value)}
                   disabled={isLoading || !contract}
