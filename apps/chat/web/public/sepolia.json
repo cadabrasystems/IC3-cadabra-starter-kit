@@ -103,7 +103,7 @@
     ]
   },
   "chat": {
-    "address": "0xaefde6ab6979c96c1d084287ec290f1f6210a05a",
+    "address": "0x6341def020f8e6077c63a63f1bb5367a8efcdc20",
     "abi": [
       {
         "type": "constructor",
@@ -115,6 +115,19 @@
           }
         ],
         "stateMutability": "nonpayable"
+      },
+      {
+        "type": "function",
+        "name": "REQUEST_TIMEOUT",
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ],
+        "stateMutability": "view"
       },
       {
         "type": "function",
@@ -185,6 +198,11 @@
             "name": "pendingRequestId",
             "type": "uint256",
             "internalType": "uint256"
+          },
+          {
+            "name": "pendingRequestTimestamp",
+            "type": "uint256",
+            "internalType": "uint256"
           }
         ],
         "stateMutability": "view"
@@ -235,6 +253,11 @@
               },
               {
                 "name": "pendingRequestId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "pendingRequestTimestamp",
                 "type": "uint256",
                 "internalType": "uint256"
               }
@@ -456,6 +479,25 @@
             "type": "string",
             "indexed": false,
             "internalType": "string"
+          }
+        ],
+        "anonymous": false
+      },
+      {
+        "type": "event",
+        "name": "PendingRequestExpired",
+        "inputs": [
+          {
+            "name": "chatId",
+            "type": "uint256",
+            "indexed": true,
+            "internalType": "uint256"
+          },
+          {
+            "name": "requestId",
+            "type": "uint256",
+            "indexed": true,
+            "internalType": "uint256"
           }
         ],
         "anonymous": false
