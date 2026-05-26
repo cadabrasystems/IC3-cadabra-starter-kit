@@ -2,13 +2,13 @@
 
 Welcome to the **Cadabra Hackathon Starter Kit**! The core goal of this hackathon is to empower you to build innovative Web3 applications that leverage an AI inference agent natively available directly on the blockchain. 
 
-Your smart contracts can ask an AI a question and receive an answer — all fully on-chain, trustlessly, and without any centralized API keys. This repository is a lightweight, fully decoupled sandbox designed to help you quickly integrate your smart contracts with the global `AbraInference` Oracle.
+Your smart contracts can ask an AI a question and receive an answer - all fully on-chain, trustlessly, and without any centralized API keys. This repository is a lightweight, fully decoupled sandbox designed to help you quickly integrate your smart contracts with the global `AbraInference` Oracle.
 
-## Quick Start — What You Need to Know
+## Quick Start - What You Need to Know
 
 ### The Network: Sepolia
 
-All development happens on **Sepolia**, a free testnet for the Ethereum blockchain. You will deploy contracts, send transactions, and interact with the AI Oracle entirely on this network. It costs nothing — all ETH used is free testnet ETH.
+All development happens on **Sepolia**, a free testnet for the Ethereum blockchain. You will deploy contracts, send transactions, and interact with the AI Oracle entirely on this network. It costs nothing - all ETH used is free testnet ETH.
 
 | Detail | Value |
 |---|---|
@@ -22,7 +22,10 @@ All development happens on **Sepolia**, a free testnet for the Ethereum blockcha
 
 1. Install the [MetaMask browser extension](https://metamask.io/download/) if you don't have it.
 2. **Enable Test Networks:** Sepolia is built into MetaMask by default. To see it, open MetaMask, click the network dropdown at the top left, and toggle **"Show test networks"**. Then select **Sepolia**.
-3. If you don't see it or prefer to add it manually: Open MetaMask → Settings → Networks → Add Network, and enter the details from the table above.
+3. If you don't see it or prefer to add it manually: Open MetaMask → Settings 
+→ Networks → Add Network, and enter the details from the table above.
+
+> ⚠️ **Security Note:** Never use your real mainnet wallet for hackathon development. Create a fresh MetaMask account specifically for this event. 
 
 ### Step 2: Get Free Testnet ETH
 
@@ -31,8 +34,6 @@ You need testnet ETH to deploy contracts and send transactions. Here's how:
 1. **Get Sepolia ETH**: Claim free ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia) (or any other Sepolia faucet). Paste your MetaMask wallet address and claim.
 
 > **Tip:** You only need a small amount of ETH (0.01 - 0.05 is plenty) to deploy contracts and send messages during the hackathon.
-
-> ⚠️ **Security Note:** Never use your real mainnet wallet for hackathon development. Create a fresh MetaMask account specifically for this event. It only holds free testnet ETH, so there is zero risk.
 
 ---
 
@@ -48,21 +49,21 @@ This template contains two working reference implementations to help you get sta
 ## Folder Structure
 
 Each app in the `apps/` directory is an independent, full-stack Web3 application containing:
-- `contracts/`: A Foundry project containing the Smart Contracts.
-- `web/`: A modern Vite + React frontend powered by `viem`.
+- `contracts/`: A Foundry project containing the Smart Contracts. Foundry is a toolkit for building, testing, and deploying Solidity smart contracts from the command line.
+- `web/`: A modern Vite + React frontend powered by `viem`. Vite is a fast frontend build tool and development server for running the React app locally and bundling it for deployment.
 
 > **No backend server or orchestrator is needed!** The frontend reads AI answers directly from the Oracle using free `view` calls. You just deploy a contract and host a static website.
 
 ## How to Run an Example
 
-Let's walk through running the **Chat App** (`apps/chat`) — a multi-user chat interface where messages are stored on-chain and answered by the decentralized AI agent.
+Let's walk through running the **Chat App** (`apps/chat`) - a multi-user chat interface where messages are stored on-chain and answered by the decentralized AI agent.
 
 > **Note:** The repository ships with an already-deployed Chat contract on Sepolia, so you can run the frontend immediately without deploying anything yourself. If you want to modify the Solidity code and deploy your own version, see the [Deploy Your Own Contract](#optional-deploy-your-own-contract) section below.
 
 ### Prerequisites
 
 Before starting, make sure you have:
-- **Node.js v22+** — [Download here](https://nodejs.org/)
+- **Node.js v22+** - [Download here](https://nodejs.org/). Node.js runs JavaScript outside the browser and provides `npm`, the package manager used to install dependencies and start the web app.
 - **Foundry** (for compiling and deploying Solidity contracts, *only needed if deploying your own contract*):
   ```bash
   curl -L https://foundry.paradigm.xyz | bash
@@ -117,9 +118,9 @@ When you run the deployment script, it automatically creates or updates the `web
 
 ## Architecture: How Apps Access the AI
 
-Both the Chat and Guard reference apps interact with the AI Oracle through a standard Solidity interface, making it incredibly easy to build your own dApps on top of the same infrastructure.
+Both the Chat and Guard reference apps interact with the AI Oracle through a standard Solidity interface, making it easy to build your own dApps on top of the same infrastructure.
 
-The core idea is simple: your smart contract sends a **plain-text prompt** (any string — a question, instruction, or conversation history) to the Oracle, and receives back a **plain-text answer** from an AI agent. The prompt is just text; there is no special format required. You request an inference, then later check its state — once finalized, the result (the AI's response) is available to read on-chain.
+The core idea is simple: your smart contract sends a **plain-text prompt** (a string with a question, instruction, or conversation history) to the Oracle, and receives back a **plain-text answer** from an AI agent. The prompt is just text; there is no special format required. You request an inference, then later check its state - once finalized, the result (the AI's response) is available to read on-chain.
 
 ### The `IDecentralizedAI` Interface
 
@@ -133,10 +134,10 @@ We provide a copy of the interface at the root of this repository for easy refer
 | `getRequest(uint256 requestId)` → `(RequestState, query, output, proposer, timestamp)` | Returns the full details of a request, including its current lifecycle state. |
 
 Every request goes through a lifecycle tracked by the `RequestState` enum:
-- **`Unproposed`** — The query has been submitted but no AI Agent has responded yet.
-- **`Proposed`** — An Agent has submitted a candidate answer and staked a bond.
-- **`InDispute`** — Another agent has challenged the proposed answer.
-- **`Finalized`** — The answer is accepted and immutable. `getResult()` will return the final output.
+- **`Unproposed`** - The query has been submitted but no AI Agent has responded yet.
+- **`Proposed`** - An Agent has submitted a candidate answer and staked a bond.
+- **`InDispute`** - Another agent has challenged the proposed answer.
+- **`Finalized`** - The answer is accepted and immutable. `getResult()` will return the final output.
 
 ### How Your App Contract Uses It
 
@@ -153,7 +154,7 @@ contract MyApp {
     }
 
     function askAI(string memory question) external {
-        // 1. Send the query — returns a unique requestId
+        // 1. Send the query - returns a unique requestId
         uint256 requestId = inferenceService.requestInference(question);
 
         // 2. Store the requestId so you can settle later
@@ -186,7 +187,7 @@ User (MetaMask) → Your App Contract → inferenceService.requestInference(quer
                                               ↓
                               Frontend polls isReady() + getResult() (free view calls)
                                               ↓
-                              Answer displayed — no backend needed!
+                              Answer displayed - no backend needed!
 ```
 
 > **Note:** No orchestrator or backend server is required. The frontend polls the Oracle directly using `isReady()` and `getResult()`, which are free read-only calls that cost zero gas.
@@ -200,7 +201,7 @@ Since the frontend reads AI answers directly from the Oracle (no backend needed!
 The `web/` folder is a standard Vite + React app that can be deployed to Vercel, Netlify, GitHub Pages, or any static hosting provider.
 
 **Vercel Deployment Steps:**
-1. Push your code to GitHub (make sure `web/public/sepolia.json` is committed — it contains your deployed contract address and ABI).
+1. Push your code to GitHub (make sure `web/public/sepolia.json` is committed - it contains your deployed contract address and ABI).
 2. Go to [vercel.com](https://vercel.com), click **Add New Project**, and import your repository.
 3. Set the **Root Directory** to your app's `web` folder (e.g. `hackathon-starter-kit/apps/chat/web`).
 4. Add the following **Environment Variable** (under Settings → Environment Variables):
