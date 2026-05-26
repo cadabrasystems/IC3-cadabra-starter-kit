@@ -43,21 +43,18 @@ export default function App() {
   const [contract, setContract] = useState(null);
   const [walletClient, setWalletClient] = useState(null);
   const [publicClient, setPublicClient] = useState(null);
-  const [walletStatus, setWalletStatus] = useState('checking'); // 'checking' | 'not-installed' | 'rejected' | 'error' | 'connected'
+  const [walletStatus, setWalletStatus] = useState('disconnected'); // 'disconnected' | 'connecting' | 'connected' | 'error'
+  const [deploymentConfig, setDeploymentConfig] = useState(null);
   const messagesEndRef = useRef(null);
   const settlingRef = useRef(new Set()); // track in-flight settleMessage calls
 
-  // Initialize Viem
+  // Load deployment config and create a read-only public client (no MetaMask needed)
   useEffect(() => {
-    const initViem = async () => {
+    const initReadOnly = async () => {
       try {
-        if (!window.ethereum) {
-          setWalletStatus('not-installed');
-          return;
-        }
-
         const res = await fetch(`/${NETWORK}.json`);
         const config = await res.json();
+        setDeploymentConfig(config);
 
         const customChain = {
           id: config.chainId,
@@ -66,46 +63,78 @@ export default function App() {
           rpcUrls: { default: { http: [config.rpcUrl] } },
         };
 
-        const wClient = createWalletClient({
-          chain: customChain,
-          transport: custom(window.ethereum)
-        });
         const pClient = createPublicClient({
           chain: customChain,
           transport: http(config.rpcUrl)
         });
-
-        try {
-          await wClient.requestAddresses();
-        } catch (connErr) {
-          // User rejected the connection request
-          if (connErr.code === 4001) {
-            setWalletStatus('rejected');
-          } else {
-            setWalletStatus('error');
-          }
-          return;
-        }
-
-        await ensureWalletChain(wClient, config);
-
-        setWalletClient(wClient);
         setPublicClient(pClient);
 
-        const chatContract = getContract({
-          address: config.chat.address,
-          abi: config.chat.abi,
-          client: { public: pClient, wallet: wClient }
-        });
-        setContract(chatContract);
-        setWalletStatus('connected');
+        // If MetaMask is available and already connected, auto-connect silently
+        if (window.ethereum) {
+          try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+              await connectWalletWithConfig(config, customChain, pClient);
+            }
+          } catch (e) {
+            // Silently ignore - user can connect manually
+          }
+        }
       } catch (e) {
-        console.error("Failed to initialize:", e);
-        setWalletStatus('error');
+        console.error("Failed to load deployment config:", e);
       }
     };
-    initViem();
+    initReadOnly();
   }, []);
+
+  // Internal wallet connection logic (reusable)
+  const connectWalletWithConfig = async (config, customChain, pClient) => {
+    const wClient = createWalletClient({
+      chain: customChain,
+      transport: custom(window.ethereum)
+    });
+
+    await wClient.requestAddresses();
+    await ensureWalletChain(wClient, config);
+
+    setWalletClient(wClient);
+
+    const chatContract = getContract({
+      address: config.chat.address,
+      abi: config.chat.abi,
+      client: { public: pClient, wallet: wClient }
+    });
+    setContract(chatContract);
+    setWalletStatus('connected');
+  };
+
+  // Connect wallet (triggered by user clicking "Connect Wallet")
+  const handleConnectWallet = async () => {
+    if (!window.ethereum) {
+      window.open('https://metamask.io/download/', '_blank');
+      return;
+    }
+
+    if (!deploymentConfig || !publicClient) return;
+
+    setWalletStatus('connecting');
+    try {
+      const config = deploymentConfig;
+      const customChain = {
+        id: config.chainId,
+        name: config.chainId === 84532 ? 'Base Sepolia' : `Chain ${config.chainId}`,
+        nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+        rpcUrls: { default: { http: [config.rpcUrl] } },
+      };
+
+      await connectWalletWithConfig(config, customChain, publicClient);
+    } catch (err) {
+      console.error("Wallet connection failed:", err);
+      setWalletStatus('error');
+      // Reset to disconnected after a moment so user can retry
+      setTimeout(() => setWalletStatus('disconnected'), 3000);
+    }
+  };
 
   // Poll for conversations and active chat messages
   // Reads AI answers directly from the inference service (zero gas) - no orchestrator needed!
@@ -267,104 +296,30 @@ export default function App() {
     }
   };
 
-  const handleConnectWallet = () => {
-    setWalletStatus('checking');
-    // Re-run initialization
-    window.location.reload();
-  };
-
-  // Wallet connection overlay
-  if (walletStatus !== 'connected' && walletStatus !== 'checking') {
-    return (
-      <div className="app-container">
-        <div className="wallet-overlay">
-          <div className="wallet-modal glass-panel">
-            <div className="wallet-icon">
-              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="url(#walletGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <defs>
-                  <linearGradient id="walletGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#8a2be2" />
-                    <stop offset="100%" stopColor="#4a00e0" />
-                  </linearGradient>
-                </defs>
-                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                <line x1="1" y1="10" x2="23" y2="10"></line>
-              </svg>
-            </div>
-            {walletStatus === 'not-installed' && (
-              <>
-                <h2>MetaMask Not Detected</h2>
-                <p className="wallet-desc">Install the MetaMask browser extension to use this app, then refresh the page.</p>
-                <div className="wallet-actions">
-                  <a
-                    href="https://metamask.io/download/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="wallet-btn primary"
-                  >
-                    Install MetaMask
-                  </a>
-                  <button className="wallet-btn secondary" onClick={handleConnectWallet}>
-                    Refresh Page
-                  </button>
-                </div>
-              </>
-            )}
-            {walletStatus === 'rejected' && (
-              <>
-                <h2>Connection Rejected</h2>
-                <p className="wallet-desc">You declined the wallet connection request. Click below to try again.</p>
-                <div className="wallet-actions">
-                  <button className="wallet-btn primary" onClick={handleConnectWallet}>
-                    Try Again
-                  </button>
-                </div>
-              </>
-            )}
-            {walletStatus === 'error' && (
-              <>
-                <h2>Connection Failed</h2>
-                <p className="wallet-desc">Something went wrong connecting to your wallet. Make sure MetaMask is unlocked and try again.</p>
-                <div className="wallet-actions">
-                  <button className="wallet-btn primary" onClick={handleConnectWallet}>
-                    Retry Connection
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Loading state while checking wallet
-  if (walletStatus === 'checking') {
-    return (
-      <div className="app-container">
-        <div className="wallet-overlay">
-          <div className="wallet-modal glass-panel">
-            <div className="wallet-spinner"></div>
-            <h2>Connecting Wallet...</h2>
-            <p className="wallet-desc">Waiting for MetaMask approval.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const isWalletConnected = walletStatus === 'connected';
 
   return (
     <div className="app-container">
       {/* Sidebar */}
       <div className="sidebar glass-panel">
         <div className="sidebar-header">
-          <button className="new-chat-btn" onClick={handleNewChat} disabled={!contract}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            New Chat
-          </button>
+          {isWalletConnected ? (
+            <button className="new-chat-btn" onClick={handleNewChat} disabled={!contract}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              New Chat
+            </button>
+          ) : (
+            <button className="new-chat-btn" onClick={handleConnectWallet} disabled={walletStatus === 'connecting'}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                <line x1="1" y1="10" x2="23" y2="10"></line>
+              </svg>
+              {walletStatus === 'connecting' ? 'Connecting...' : walletStatus === 'error' ? 'Retry' : !window.ethereum ? 'Get MetaMask' : 'Connect Wallet'}
+            </button>
+          )}
         </div>
         <div className="conversation-list">
           {conversations.map(conv => (
@@ -414,7 +369,7 @@ export default function App() {
                 <input 
                   type="text" 
                   className="chat-input"
-                  placeholder="Type a message..." 
+                  placeholder={isWalletConnected ? "Type a message..." : "Connect wallet to chat..."} 
                   value={inputValue}
                   onChange={e => setInputValue(e.target.value)}
                   disabled={isLoading || !contract}
@@ -475,7 +430,7 @@ export default function App() {
                   </svg>
                 </div>
                 <h3>Gas Costs</h3>
-                <p>Creating chats and sending messages are on-chain transactions. Each one costs a small amount of <strong>Sepolia ETH</strong> (testnet - no real money). You can get free Sepolia ETH from a faucet.</p>
+                <p>Creating chats and sending messages are on-chain transactions. Each one costs a small amount of <strong>Sepolia ETH</strong> (testnet - no real money). Get free ETH from the <a href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia" target="_blank" rel="noopener noreferrer">Google Cloud Faucet</a>.</p>
               </div>
 
               <div className="welcome-card">
@@ -490,7 +445,18 @@ export default function App() {
               </div>
             </div>
 
-            <p className="welcome-cta">Click <strong>New Chat</strong> in the sidebar to get started.</p>
+            {!isWalletConnected && (
+              <div className="welcome-connect">
+                {!window.ethereum ? (
+                  <p className="welcome-cta">To start chatting, install <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer"><strong>MetaMask</strong></a> and connect your wallet.</p>
+                ) : (
+                  <p className="welcome-cta">Click <strong>Connect Wallet</strong> in the sidebar to get started.</p>
+                )}
+              </div>
+            )}
+            {isWalletConnected && (
+              <p className="welcome-cta">Click <strong>New Chat</strong> in the sidebar to get started.</p>
+            )}
           </div>
         )}
       </div>
