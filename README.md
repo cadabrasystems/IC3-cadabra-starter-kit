@@ -129,7 +129,7 @@ We provide a copy of the interface at the root of this repository for easy refer
 |---|---|
 | `requestInference(string query)` → `uint256 requestId` | Sends a natural-language query to the AI. Returns a unique `requestId` you use to track and retrieve the result. |
 | `isReady(uint256 requestId)` → `bool` | Returns `true` once the AI Agent has proposed and finalized the answer for a given request. |
-| `getResult(uint256 requestId)` → `string output` | Retrieves the finalized AI-generated answer as a plain string. |
+| `getResult(uint256 requestId)` → `string output` | Returns the current output for a request. Before any agent has proposed, this is an empty string `""`. After proposal but before finalization, it returns the proposed (not yet finalized) answer. Always check `isReady()` first to confirm the result is final. |
 | `getRequest(uint256 requestId)` → `(RequestState, query, output, proposer, timestamp)` | Returns the full details of a request, including its current lifecycle state. |
 
 Every request goes through a lifecycle tracked by the `RequestState` enum:

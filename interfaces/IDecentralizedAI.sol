@@ -70,9 +70,12 @@ interface IDecentralizedAI {
         string calldata query
     ) external returns (uint256 requestId);
 
-    /// @notice Retrieve the finalized AI-generated answer.
+    /// @notice Retrieve the current output for a request.
+    /// @dev Before any agent has proposed, returns an empty string.
+    ///      After proposal but before finalization, returns the proposed (not yet finalized) answer.
+    ///      Always check isReady() first to confirm the result is final.
     /// @param requestId The ID returned by requestInference().
-    /// @return output The AI's plain-text response.
+    /// @return output The AI's plain-text response (empty if no proposal yet).
     function getResult(
         uint256 requestId
     ) external view returns (string memory output);
