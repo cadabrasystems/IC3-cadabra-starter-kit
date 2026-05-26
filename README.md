@@ -123,6 +123,7 @@ When you run the deployment script, it automatically creates or updates the `web
 If you prefer to develop locally without spending testnet Sepolia ETH or waiting for block confirmations, you can run the entire AI infrastructure on your own machine. We have provided a self-contained local setup in the `local-setup` folder.
 
 1. **Start Anvil (Local Blockchain)**
+   *(If you don't have Anvil, install [Foundry](https://book.getfoundry.sh/getting-started/installation))*
    In a new terminal window, start a local anvil node:
    ```bash
    anvil
@@ -138,7 +139,7 @@ If you prefer to develop locally without spending testnet Sepolia ETH or waiting
    ```
 
 3. **Start the Mock Agent**
-   The mock agent listens for AI requests on your local blockchain and automatically answers them. You can customize its logic in `local-setup/agent/agent.mjs`.
+   The mock agent listens for AI requests on your local blockchain and automatically answers them. It uses Anvil's default Account #0 which starts pre-funded with 10,000 local ETH. You can customize its logic in `local-setup/agent/agent.mjs`.
    ```bash
    cd ../agent
    npm install
@@ -156,6 +157,12 @@ If you prefer to develop locally without spending testnet Sepolia ETH or waiting
    npm --prefix apps/chat/contracts run deploy:localhost
    npm --prefix apps/chat/web run dev
    ```
+
+   **Using MetaMask with Anvil:**
+   To interact with your local apps via the browser, you need to import one of Anvil's pre-funded accounts into MetaMask:
+   1. Open MetaMask and switch the network to **Localhost 8545**.
+   2. Click your account icon → **Import Account**.
+   3. Paste Anvil's default private key (Account #1): `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d`. This account has 10,000 local ETH.
 
 > [!TIP]
 > **Customizing the Agent:** The local agent provided in `local-setup/agent/agent.mjs` simply echoes back your prompts. Open that file and modify the `getAgentResponse(query)` function to connect to OpenAI, Ollama, Anthropic, or any other AI provider you want to use!
