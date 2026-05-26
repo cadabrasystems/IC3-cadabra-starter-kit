@@ -12,7 +12,7 @@ fi
 
 # Find the inference address from the local deployment
 ROOT_DIR=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
-LOCAL_SETUP_JSON="$ROOT_DIR/hackathon-starter-kit/local-setup/localhost.json"
+LOCAL_SETUP_JSON="$ROOT_DIR/local-setup/localhost.json"
 if [ -f "$LOCAL_SETUP_JSON" ]; then
     export INFERENCE_ADDRESS=$(node -e "console.log(require('$LOCAL_SETUP_JSON').inference.address)")
 else
