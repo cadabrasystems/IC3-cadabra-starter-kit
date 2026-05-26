@@ -118,6 +118,50 @@ If you want to modify the Solidity code and deploy your own version of the contr
 **How does the web app know about your new contract?**
 When you run the deployment script, it automatically creates or updates the `web/public/sepolia.json` file with your newly deployed contract address and ABI. The web frontend reads this file on startup, so all you need to do is refresh your browser to interact with your new contract!
 
+## Local Development (Anvil + Mock Agent)
+
+If you prefer to develop locally without spending testnet Sepolia ETH or waiting for block confirmations, you can run the entire AI infrastructure on your own machine. We have provided a self-contained local setup in the `local-setup` folder.
+
+1. **Start Anvil (Local Blockchain)**
+   In a new terminal window, start a local anvil node:
+   ```bash
+   anvil
+   ```
+   *(Keep this terminal open)*
+
+2. **Deploy the Local Inference Contract**
+   In another terminal, deploy the `CadabraInference` contract to your local Anvil node. This will generate a `localhost.json` configuration file:
+   ```bash
+   cd local-setup/contracts
+   npm install
+   npm run deploy:local
+   ```
+
+3. **Start the Mock Agent**
+   The mock agent listens for AI requests on your local blockchain and automatically answers them. You can customize its logic in `local-setup/agent/agent.mjs`.
+   ```bash
+   cd ../agent
+   npm install
+   npm start
+   ```
+   *(Keep this terminal open)*
+
+4. **Run the Starter Apps Locally**
+   Now that your local infrastructure is running, you can run the sample apps against it. Use the `localhost-env.sh` script instead of `sepolia-env.sh`.
+
+   For example, to run the Chat app locally:
+   ```bash
+   # From the root of the hackathon-starter-kit:
+   source apps/chat/localhost-env.sh
+   npm --prefix apps/chat/contracts run deploy:localhost
+   npm --prefix apps/chat/web run dev
+   ```
+
+> [!TIP]
+> **Customizing the Agent:** The local agent provided in `local-setup/agent/agent.mjs` simply echoes back your prompts. Open that file and modify the `getAgentResponse(query)` function to connect to OpenAI, Ollama, Anthropic, or any other AI provider you want to use!
+
+---
+
 ## Architecture: How Apps Access the AI
 
 Both the Chat and Guard reference apps interact with the AI inference service through a standard Solidity interface, making it incredibly easy to build your own dApps on top of the same infrastructure.

@@ -1,0 +1,13 @@
+{
+  "name": "local-inference-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "forge build",
+    "deploy:local": "npm run build && node scripts/deploy.mjs"
+  },
+  "devDependencies": {
+    "viem": "^2.43.0"
+  }
+}
