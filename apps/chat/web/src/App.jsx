@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { createWalletClient, createPublicClient, custom, getContract } from 'viem';
+import { createWalletClient, createPublicClient, custom, http, getContract } from 'viem';
 import './index.css';
 
 const NETWORK = import.meta.env.VITE_NETWORK || "sepolia";
@@ -72,7 +72,7 @@ export default function App() {
         });
         const pClient = createPublicClient({
           chain: customChain,
-          transport: custom(window.ethereum)
+          transport: http(config.rpcUrl)
         });
 
         try {
