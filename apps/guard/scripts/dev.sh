@@ -18,7 +18,7 @@ fi
 npm --prefix "$ROOT_DIR/contracts" run deploy:network
 
 # Start Web App
-# No orchestrator needed — the frontend reads AI answers directly from the Oracle!
+# No orchestrator needed - the frontend reads AI answers directly from the inference service!
 npm --prefix "$ROOT_DIR/web" run dev -- --host 0.0.0.0 --port 5173 &
 WEB_PID=$!
 

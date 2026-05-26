@@ -1,6 +1,6 @@
 # Guard App
 
-A local web3 guard game with commit-reveal input, shared `AbraInference` resolution, and orchestrator-driven settlement.
+A local web3 guard game with commit-reveal input, shared `CadabraInference` resolution, and orchestrator-driven settlement.
 
 ## Round workflow
 Contract has global round states:
@@ -12,19 +12,19 @@ Flow:
 1. Browser computes `commitment = keccak256(message || nonce)`.
 2. Browser submits commitment on-chain.
 3. Browser reveals `(message, nonce)` on-chain.
-4. Contract verifies reveal, hashes `(currentGuard, message)`, and requests inference from `AbraInference`.
+4. Contract verifies reveal, hashes `(currentGuard, message)`, and requests inference from `CadabraInference`.
 5. A shared mock agent from `packages/inference-core-agents` proposes and resolves the inference result.
 6. Orchestrator observes inference readiness and calls the guard contract to settle.
 7. On win, the new guard becomes the revealed message.
 
 ## Current dev setup
 - `web` writes commit + reveal using the connected browser wallet.
-- `orchestrator` does not compute inference. It only settles the guard round after the global `AbraInference` oracle resolves it.
+- `orchestrator` does not compute inference. It only settles the guard round after the global `CadabraInference` service resolves it.
 
 ## Architecture
 - `web` reads blockchain state directly and performs commit + reveal writes.
 - `orchestrator` observes readiness and triggers settlement.
-- `contracts` is a Foundry package that deploys `GuardGame` and hooks it to the global `AbraInference` contract.
+- `contracts` is a Foundry package that deploys `GuardGame` and hooks it to the global `CadabraInference` contract.
 
 ## Project structure
 - `contracts/`: Foundry project and app-local helper scripts.
@@ -33,7 +33,7 @@ Flow:
 - `scripts/dev.sh`: deploys the app, starts the orchestrator, and frontend.
 
 ## Quick start
-1. Start the Oracle Network FIRST. In a separate terminal, navigate to `packages/oracle` and run `npm run dev`.
+1. Start the inference service FIRST. In a separate terminal, navigate to `packages/oracle` and run `npm run dev`.
 2. Start the Guard App. In this directory (`apps/guard`), run:
    ```bash
    npm run dev
@@ -63,7 +63,7 @@ Deploy writes to:
 - `deployments/localhost.json`
 - `web/public/localhost.json`
 
-Both web and orchestrator use this metadata. It contains both the guard contract and `AbraInference` deployment info (fetched from the Oracle's deployment directory).
+Both web and orchestrator use this metadata. It contains both the guard contract and `CadabraInference` deployment info (fetched from the agent's deployment directory).
 
 ## Deploying to Sepolia Testnet
 
@@ -77,7 +77,7 @@ To test the Guard App on a public testnet like Sepolia (which supports EIP-4844 
 
 ### Deployment Steps
 
-Ensure you have already deployed the Oracle and started its agent in `packages/oracle` before deploying the Guard App.
+Ensure you have already deployed the inference service and started its agent in `packages/oracle` before deploying the Guard App.
 
 You must run these commands in separate terminal windows from the `apps/guard` directory.
 

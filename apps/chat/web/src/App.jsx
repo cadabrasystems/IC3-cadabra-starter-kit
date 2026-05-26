@@ -108,7 +108,7 @@ export default function App() {
   }, []);
 
   // Poll for conversations and active chat messages
-  // Reads AI answers directly from the Oracle (zero gas) — no orchestrator needed!
+  // Reads AI answers directly from the inference service (zero gas) - no orchestrator needed!
   useEffect(() => {
     if (!contract || !publicClient) return;
 
@@ -140,7 +140,7 @@ export default function App() {
           if (chatDetails && Number(chatDetails.pendingRequestId) > 0) {
             const requestId = chatDetails.pendingRequestId;
 
-            // Poll the Oracle directly — isReady() is a free view call
+            // Poll the inference service directly - isReady() is a free view call
             const ready = await publicClient.readContract({
               address: inferenceAddress,
               abi: inferenceAbi,
@@ -149,7 +149,7 @@ export default function App() {
             });
 
             if (ready) {
-              // Read the AI answer directly from the Oracle — free view call
+              // Read the AI answer directly from the inference service - free view call
               const result = await publicClient.readContract({
                 address: inferenceAddress,
                 abi: inferenceAbi,
@@ -186,15 +186,15 @@ export default function App() {
               const ageSeconds = pendingTimestamp > 0 ? now - pendingTimestamp : 0;
 
               if (pendingTimestamp > 0 && ageSeconds >= REQUEST_TIMEOUT_SECONDS) {
-                // Request has expired — contract will auto-reset on next sendMessage
+                // Request has expired - contract will auto-reset on next sendMessage
                 displayMessages.push({
                   role: 'agent',
-                  content: '⚠️ The AI agent did not respond in time. The request has expired — you can send a new message now.'
+                  content: '⚠️ The AI agent did not respond in time. The request has expired - you can send a new message now.'
                 });
                 setIsLoading(false);
                 setPendingStatus('expired');
               } else if (pendingTimestamp > 0 && ageSeconds > 120) {
-                // Agent is slow — show countdown to auto-recovery
+                // Agent is slow - show countdown to auto-recovery
                 const remaining = REQUEST_TIMEOUT_SECONDS - ageSeconds;
                 const mins = Math.floor(remaining / 60);
                 const secs = remaining % 60;
@@ -451,7 +451,7 @@ export default function App() {
                 </svg>
               </div>
               <h2>On-Chain AI Chat</h2>
-              <p className="welcome-subtitle">A fully decentralized AI chatbot — every message lives on the blockchain.</p>
+              <p className="welcome-subtitle">A fully decentralized AI chatbot - every message lives on the blockchain.</p>
             </div>
 
             <div className="welcome-cards">
@@ -464,7 +464,7 @@ export default function App() {
                   </svg>
                 </div>
                 <h3>How It Works</h3>
-                <p>Your messages are sent as smart contract transactions. An on-chain oracle processes them through an AI model and returns the response directly to the blockchain.</p>
+                <p>Your messages are sent as smart contract transactions. An on-chain AI agent processes them through an AI model and returns the response directly to the blockchain.</p>
               </div>
 
               <div className="welcome-card">
@@ -475,7 +475,7 @@ export default function App() {
                   </svg>
                 </div>
                 <h3>Gas Costs</h3>
-                <p>Creating chats and sending messages are on-chain transactions. Each one costs a small amount of <strong>Sepolia ETH</strong> (testnet — no real money). You can get free Sepolia ETH from a faucet.</p>
+                <p>Creating chats and sending messages are on-chain transactions. Each one costs a small amount of <strong>Sepolia ETH</strong> (testnet - no real money). You can get free Sepolia ETH from a faucet.</p>
               </div>
 
               <div className="welcome-card">
@@ -486,7 +486,7 @@ export default function App() {
                   </svg>
                 </div>
                 <h3>Fully On-Chain</h3>
-                <p>Your entire conversation history is stored on the blockchain — transparent, verifiable, and censorship-resistant. No centralized server involved.</p>
+                <p>Your entire conversation history is stored on the blockchain - transparent, verifiable, and censorship-resistant. No centralized server involved.</p>
               </div>
             </div>
 
