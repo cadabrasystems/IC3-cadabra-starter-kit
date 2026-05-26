@@ -2,9 +2,9 @@
 pragma solidity ^0.8.25;
 
 /**
- * @title IDecentralizedAI — The Cadabra Oracle Interface
+ * @title IDecentralizedAI - The Cadabra AI Interface
  * @notice This is the universal interface your smart contract uses to interact
- *         with the decentralized AI Oracle on Base Sepolia.
+ *         with the decentralized AI inference service on Base Sepolia.
  *
  * ## How It Works
  *
@@ -37,19 +37,19 @@ pragma solidity ^0.8.25;
  *   import "./interfaces/IDecentralizedAI.sol";
  *
  *   contract MyApp {
- *       IDecentralizedAI public immutable oracle;
+ *       IDecentralizedAI public immutable aiService;
  *
- *       constructor(address oracleAddress) {
- *           oracle = IDecentralizedAI(oracleAddress);
+ *       constructor(address serviceAddress) {
+ *           aiService = IDecentralizedAI(serviceAddress);
  *       }
  *
  *       function ask(string memory prompt) external returns (uint256) {
- *           return oracle.requestInference(prompt);
+ *           return aiService.requestInference(prompt);
  *       }
  *
  *       function readAnswer(uint256 requestId) external view returns (string memory) {
- *           require(oracle.isReady(requestId), "Answer not ready yet");
- *           return oracle.getResult(requestId);
+ *           require(aiService.isReady(requestId), "Answer not ready yet");
+ *           return aiService.getResult(requestId);
  *       }
  *   }
  *   ```
@@ -60,19 +60,22 @@ interface IDecentralizedAI {
         Unproposed,  // Query submitted, awaiting an agent response
         Proposed,    // Agent proposed an answer (bonded)
         InDispute,   // Answer is being challenged
-        Finalized    // Answer accepted — safe to read via getResult()
+        Finalized    // Answer accepted - safe to read via getResult()
     }
 
-    /// @notice Submit a plain-text prompt to the AI Oracle.
+    /// @notice Submit a plain-text prompt to the AI inference service.
     /// @param query The natural-language prompt (e.g. "Summarize this article: ...").
     /// @return requestId A unique identifier to track and retrieve the result.
     function requestInference(
         string calldata query
     ) external returns (uint256 requestId);
 
-    /// @notice Retrieve the finalized AI-generated answer.
+    /// @notice Retrieve the current output for a request.
+    /// @dev Before any agent has proposed, returns an empty string.
+    ///      After proposal but before finalization, returns the proposed (not yet finalized) answer.
+    ///      Always check isReady() first to confirm the result is final.
     /// @param requestId The ID returned by requestInference().
-    /// @return output The AI's plain-text response.
+    /// @return output The AI's plain-text response (empty if no proposal yet).
     function getResult(
         uint256 requestId
     ) external view returns (string memory output);

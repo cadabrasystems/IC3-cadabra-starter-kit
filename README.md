@@ -2,13 +2,15 @@
 
 Welcome to the **Cadabra Hackathon Starter Kit**! The core goal of this hackathon is to empower you to build innovative Web3 applications that leverage an AI inference agent natively available directly on the blockchain. 
 
-Your smart contracts can ask an AI a question and receive an answer - all fully on-chain, trustlessly, and without any centralized API keys. This repository is a lightweight, fully decoupled sandbox designed to help you quickly integrate your smart contracts with the global `AbraInference` Oracle.
+💬 **Join our Discord for help, announcements, and team coordination:** [discord.gg/vpHdpacT](https://discord.gg/vpHdpacT)
+
+Your smart contracts can ask an AI a question and receive an answer - all fully on-chain, trustlessly, and without any centralized API keys. This repository is designed to help you quickly integrate your smart contracts with the global `CadabraInference` service.
 
 ## Quick Start - What You Need to Know
 
 ### The Network: Sepolia
 
-All development happens on **Sepolia**, a free testnet for the Ethereum blockchain. You will deploy contracts, send transactions, and interact with the AI Oracle entirely on this network. It costs nothing - all ETH used is free testnet ETH.
+All development happens on **Sepolia**, a free testnet for the Ethereum blockchain. You will deploy contracts, send transactions, and interact with the AI inference service entirely on this network. It costs nothing - all ETH used is free testnet ETH.
 
 | Detail | Value |
 |---|---|
@@ -52,7 +54,7 @@ Each app in the `apps/` directory is an independent, full-stack Web3 application
 - `contracts/`: A Foundry project containing the Smart Contracts. Foundry is a toolkit for building, testing, and deploying Solidity smart contracts from the command line.
 - `web/`: A modern Vite + React frontend powered by `viem`. Vite is a fast frontend build tool and development server for running the React app locally and bundling it for deployment.
 
-> **No backend server or orchestrator is needed!** The frontend reads AI answers directly from the Oracle using free `view` calls. You just deploy a contract and host a static website.
+> **No backend server or orchestrator is needed!** The frontend reads AI answers directly from the inference service using free `view` calls. You just deploy a contract and host a static website.
 
 ## How to Run an Example
 
@@ -98,7 +100,7 @@ Open `http://localhost:5173` in your browser, connect MetaMask, and start chatti
 
 If you want to modify the Solidity code and deploy your own version of the contract, you can easily do so. To protect your private key, we recommend prompting for it inline rather than saving it in an environment file.
 
-1. Load the Sepolia environment (this points the deployment script to the global AI Oracle):
+1. Load the Sepolia environment (this points the deployment script to the global AI inference service):
    ```bash
    source sepolia-env.sh
    ```
@@ -118,19 +120,19 @@ When you run the deployment script, it automatically creates or updates the `web
 
 ## Architecture: How Apps Access the AI
 
-Both the Chat and Guard reference apps interact with the AI Oracle through a standard Solidity interface, making it easy to build your own dApps on top of the same infrastructure.
+Both the Chat and Guard reference apps interact with the AI inference service through a standard Solidity interface, making it incredibly easy to build your own dApps on top of the same infrastructure.
 
-The core idea is simple: your smart contract sends a **plain-text prompt** (a string with a question, instruction, or conversation history) to the Oracle, and receives back a **plain-text answer** from an AI agent. The prompt is just text; there is no special format required. You request an inference, then later check its state - once finalized, the result (the AI's response) is available to read on-chain.
+The core idea is simple: your smart contract sends a **plain-text prompt** (any string - a question, instruction, or conversation history) to the inference service, and receives back a **plain-text answer** from an AI agent. The prompt is just text; there is no special format required. You request an inference, then later check its state - once finalized, the result (the AI's response) is available to read on-chain.
 
 ### The `IDecentralizedAI` Interface
 
-We provide a copy of the interface at the root of this repository for easy reference: [`interfaces/IDecentralizedAI.sol`](./interfaces/IDecentralizedAI.sol). This is the universal interface your smart contract imports to talk to the AI Oracle. It is fully documented with NatSpec comments and a usage example. It exposes four functions:
+We provide a copy of the interface at the root of this repository for easy reference: [`interfaces/IDecentralizedAI.sol`](./interfaces/IDecentralizedAI.sol). This is the universal interface your smart contract imports to talk to the AI inference service. It is fully documented with NatSpec comments and a usage example. It exposes four functions:
 
 | Function | Description |
 |---|---|
 | `requestInference(string query)` → `uint256 requestId` | Sends a natural-language query to the AI. Returns a unique `requestId` you use to track and retrieve the result. |
 | `isReady(uint256 requestId)` → `bool` | Returns `true` once the AI Agent has proposed and finalized the answer for a given request. |
-| `getResult(uint256 requestId)` → `string output` | Retrieves the finalized AI-generated answer as a plain string. |
+| `getResult(uint256 requestId)` → `string output` | Returns the current output for a request. Before any agent has proposed, this is an empty string `""`. After proposal but before finalization, it returns the proposed (not yet finalized) answer. Always check `isReady()` first to confirm the result is final. |
 | `getRequest(uint256 requestId)` → `(RequestState, query, output, proposer, timestamp)` | Returns the full details of a request, including its current lifecycle state. |
 
 Every request goes through a lifecycle tracked by the `RequestState` enum:
@@ -190,11 +192,11 @@ User (MetaMask) → Your App Contract → inferenceService.requestInference(quer
                               Answer displayed - no backend needed!
 ```
 
-> **Note:** No orchestrator or backend server is required. The frontend polls the Oracle directly using `isReady()` and `getResult()`, which are free read-only calls that cost zero gas.
+> **Note:** No orchestrator or backend server is required. The frontend polls the inference service directly using `isReady()` and `getResult()`, which are free read-only calls that cost zero gas.
 
 ## Deploying to the Cloud
 
-Since the frontend reads AI answers directly from the Oracle (no backend needed!), deploying is as simple as hosting a static website.
+Since the frontend reads AI answers directly from the inference service (no backend needed!), deploying is as simple as hosting a static website.
 
 ### Frontend → Vercel (or any static host)
 

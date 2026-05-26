@@ -20,7 +20,7 @@ if (!inferenceAddress) {
   throw new Error("INFERENCE_ADDRESS environment variable is missing!");
 }
 
-console.log(`Using existing AbraInference Oracle at: ${inferenceAddress}`);
+console.log(`Using existing CadabraInference at: ${inferenceAddress}`);
 
 const chatHash = await walletClient.deployContract({
   abi: chatArtifact.abi,

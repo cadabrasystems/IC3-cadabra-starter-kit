@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { createWalletClient, createPublicClient, custom, getContract } from 'viem';
+import { createWalletClient, createPublicClient, custom, http, getContract } from 'viem';
 import './index.css';
 
 const NETWORK = import.meta.env.VITE_NETWORK || "sepolia";
@@ -43,57 +43,72 @@ export default function App() {
   const [contract, setContract] = useState(null);
   const [walletClient, setWalletClient] = useState(null);
   const [publicClient, setPublicClient] = useState(null);
+  const [walletStatus, setWalletStatus] = useState('checking'); // 'checking' | 'not-installed' | 'rejected' | 'error' | 'connected'
   const messagesEndRef = useRef(null);
+  const settlingRef = useRef(new Set()); // track in-flight settleMessage calls
 
   // Initialize Viem
   useEffect(() => {
     const initViem = async () => {
       try {
+        if (!window.ethereum) {
+          setWalletStatus('not-installed');
+          return;
+        }
+
         const res = await fetch(`/${NETWORK}.json`);
         const config = await res.json();
 
-        if (window.ethereum) {
-          const customChain = {
-            id: config.chainId,
-            name: config.chainId === 84532 ? 'Base Sepolia' : `Chain ${config.chainId}`,
-            nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-            rpcUrls: { default: { http: [config.rpcUrl] } },
-          };
+        const customChain = {
+          id: config.chainId,
+          name: config.chainId === 84532 ? 'Base Sepolia' : `Chain ${config.chainId}`,
+          nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+          rpcUrls: { default: { http: [config.rpcUrl] } },
+        };
 
-          const wClient = createWalletClient({
-            chain: customChain,
-            transport: custom(window.ethereum)
-          });
-          const pClient = createPublicClient({
-            chain: customChain,
-            transport: custom(window.ethereum)
-          });
-          
+        const wClient = createWalletClient({
+          chain: customChain,
+          transport: custom(window.ethereum)
+        });
+        const pClient = createPublicClient({
+          chain: customChain,
+          transport: http(config.rpcUrl)
+        });
+
+        try {
           await wClient.requestAddresses();
-          await ensureWalletChain(wClient, config);
-          
-          setWalletClient(wClient);
-          setPublicClient(pClient);
-
-          const chatContract = getContract({
-            address: config.chat.address,
-            abi: config.chat.abi,
-            client: { public: pClient, wallet: wClient }
-          });
-          setContract(chatContract);
-        } else {
-          console.warn("No Web3 wallet found, falling back to read-only mode");
+        } catch (connErr) {
+          // User rejected the connection request
+          if (connErr.code === 4001) {
+            setWalletStatus('rejected');
+          } else {
+            setWalletStatus('error');
+          }
           return;
         }
+
+        await ensureWalletChain(wClient, config);
+
+        setWalletClient(wClient);
+        setPublicClient(pClient);
+
+        const chatContract = getContract({
+          address: config.chat.address,
+          abi: config.chat.abi,
+          client: { public: pClient, wallet: wClient }
+        });
+        setContract(chatContract);
+        setWalletStatus('connected');
       } catch (e) {
-        console.error("Failed to load network config:", e);
+        console.error("Failed to initialize:", e);
+        setWalletStatus('error');
       }
     };
     initViem();
   }, []);
 
   // Poll for conversations and active chat messages
-  // Reads AI answers directly from the Oracle (zero gas) — no orchestrator needed!
+  // Reads AI answers directly from the inference service (zero gas) - no orchestrator needed!
   useEffect(() => {
     if (!contract || !publicClient) return;
 
@@ -125,7 +140,7 @@ export default function App() {
           if (chatDetails && Number(chatDetails.pendingRequestId) > 0) {
             const requestId = chatDetails.pendingRequestId;
 
-            // Poll the Oracle directly — isReady() is a free view call
+            // Poll the inference service directly - isReady() is a free view call
             const ready = await publicClient.readContract({
               address: inferenceAddress,
               abi: inferenceAbi,
@@ -134,7 +149,7 @@ export default function App() {
             });
 
             if (ready) {
-              // Read the AI answer directly from the Oracle — free view call
+              // Read the AI answer directly from the inference service - free view call
               const result = await publicClient.readContract({
                 address: inferenceAddress,
                 abi: inferenceAbi,
@@ -146,6 +161,24 @@ export default function App() {
               displayMessages.push({ role: 'agent', content: result });
               setIsLoading(false);
               setPendingStatus(null);
+
+              // Settle the message on-chain so it persists in chat history
+              // This allows old chats to be continued without losing AI responses
+              const settleKey = requestId.toString();
+              if (walletClient && !settlingRef.current.has(settleKey)) {
+                settlingRef.current.add(settleKey);
+                (async () => {
+                  try {
+                    const [account] = await walletClient.getAddresses();
+                    const txHash = await contract.write.settleMessage([requestId], { account });
+                    await publicClient.waitForTransactionReceipt({ hash: txHash });
+                  } catch (settleErr) {
+                    console.warn('settleMessage failed (may already be settled):', settleErr.message);
+                  } finally {
+                    settlingRef.current.delete(settleKey);
+                  }
+                })();
+              }
             } else {
               // Use pendingRequestTimestamp from the chat struct directly
               const pendingTimestamp = Number(chatDetails.pendingRequestTimestamp) || 0;
@@ -153,15 +186,15 @@ export default function App() {
               const ageSeconds = pendingTimestamp > 0 ? now - pendingTimestamp : 0;
 
               if (pendingTimestamp > 0 && ageSeconds >= REQUEST_TIMEOUT_SECONDS) {
-                // Request has expired — contract will auto-reset on next sendMessage
+                // Request has expired - contract will auto-reset on next sendMessage
                 displayMessages.push({
                   role: 'agent',
-                  content: '⚠️ The AI agent did not respond in time. The request has expired — you can send a new message now.'
+                  content: '⚠️ The AI agent did not respond in time. The request has expired - you can send a new message now.'
                 });
                 setIsLoading(false);
                 setPendingStatus('expired');
               } else if (pendingTimestamp > 0 && ageSeconds > 120) {
-                // Agent is slow — show countdown to auto-recovery
+                // Agent is slow - show countdown to auto-recovery
                 const remaining = REQUEST_TIMEOUT_SECONDS - ageSeconds;
                 const mins = Math.floor(remaining / 60);
                 const secs = remaining % 60;
@@ -233,6 +266,92 @@ export default function App() {
       setIsLoading(false);
     }
   };
+
+  const handleConnectWallet = () => {
+    setWalletStatus('checking');
+    // Re-run initialization
+    window.location.reload();
+  };
+
+  // Wallet connection overlay
+  if (walletStatus !== 'connected' && walletStatus !== 'checking') {
+    return (
+      <div className="app-container">
+        <div className="wallet-overlay">
+          <div className="wallet-modal glass-panel">
+            <div className="wallet-icon">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="url(#walletGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <defs>
+                  <linearGradient id="walletGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#8a2be2" />
+                    <stop offset="100%" stopColor="#4a00e0" />
+                  </linearGradient>
+                </defs>
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                <line x1="1" y1="10" x2="23" y2="10"></line>
+              </svg>
+            </div>
+            {walletStatus === 'not-installed' && (
+              <>
+                <h2>MetaMask Not Detected</h2>
+                <p className="wallet-desc">Install the MetaMask browser extension to use this app, then refresh the page.</p>
+                <div className="wallet-actions">
+                  <a
+                    href="https://metamask.io/download/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="wallet-btn primary"
+                  >
+                    Install MetaMask
+                  </a>
+                  <button className="wallet-btn secondary" onClick={handleConnectWallet}>
+                    Refresh Page
+                  </button>
+                </div>
+              </>
+            )}
+            {walletStatus === 'rejected' && (
+              <>
+                <h2>Connection Rejected</h2>
+                <p className="wallet-desc">You declined the wallet connection request. Click below to try again.</p>
+                <div className="wallet-actions">
+                  <button className="wallet-btn primary" onClick={handleConnectWallet}>
+                    Try Again
+                  </button>
+                </div>
+              </>
+            )}
+            {walletStatus === 'error' && (
+              <>
+                <h2>Connection Failed</h2>
+                <p className="wallet-desc">Something went wrong connecting to your wallet. Make sure MetaMask is unlocked and try again.</p>
+                <div className="wallet-actions">
+                  <button className="wallet-btn primary" onClick={handleConnectWallet}>
+                    Retry Connection
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state while checking wallet
+  if (walletStatus === 'checking') {
+    return (
+      <div className="app-container">
+        <div className="wallet-overlay">
+          <div className="wallet-modal glass-panel">
+            <div className="wallet-spinner"></div>
+            <h2>Connecting Wallet...</h2>
+            <p className="wallet-desc">Waiting for MetaMask approval.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">
@@ -307,15 +426,71 @@ export default function App() {
                   </svg>
                 </button>
               </form>
+              <p className="gas-notice">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                Each message is an on-chain transaction and costs a small amount of Sepolia ETH.
+              </p>
             </div>
           </>
         ) : (
-          <div className="empty-state">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(138, 43, 226, 0.5)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <h2>Select or start a new conversation</h2>
-            {!contract && <p style={{fontSize: '0.9rem'}}>Please connect your Web3 wallet.</p>}
+          <div className="welcome-state">
+            <div className="welcome-hero">
+              <div className="welcome-icon">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="url(#heroGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <defs>
+                    <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#8a2be2" />
+                      <stop offset="100%" stopColor="#4a00e0" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </div>
+              <h2>On-Chain AI Chat</h2>
+              <p className="welcome-subtitle">A fully decentralized AI chatbot - every message lives on the blockchain.</p>
+            </div>
+
+            <div className="welcome-cards">
+              <div className="welcome-card">
+                <div className="welcome-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
+                  </svg>
+                </div>
+                <h3>How It Works</h3>
+                <p>Your messages are sent as smart contract transactions. An on-chain AI agent processes them through an AI model and returns the response directly to the blockchain.</p>
+              </div>
+
+              <div className="welcome-card">
+                <div className="welcome-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                </div>
+                <h3>Gas Costs</h3>
+                <p>Creating chats and sending messages are on-chain transactions. Each one costs a small amount of <strong>Sepolia ETH</strong> (testnet - no real money). You can get free Sepolia ETH from a faucet.</p>
+              </div>
+
+              <div className="welcome-card">
+                <div className="welcome-card-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </div>
+                <h3>Fully On-Chain</h3>
+                <p>Your entire conversation history is stored on the blockchain - transparent, verifiable, and censorship-resistant. No centralized server involved.</p>
+              </div>
+            </div>
+
+            <p className="welcome-cta">Click <strong>New Chat</strong> in the sidebar to get started.</p>
           </div>
         )}
       </div>

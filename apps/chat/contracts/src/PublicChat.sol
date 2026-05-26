@@ -66,7 +66,7 @@ contract PublicChat {
             if (block.timestamp < chat.pendingRequestTimestamp + REQUEST_TIMEOUT) {
                 revert ChatIsWaitingForAgent();
             }
-            // Request timed out — expire it and allow the new message
+            // Request timed out - expire it and allow the new message
             emit PendingRequestExpired(chatId, chat.pendingRequestId);
             chat.pendingRequestId = 0;
             chat.pendingRequestTimestamp = 0;
