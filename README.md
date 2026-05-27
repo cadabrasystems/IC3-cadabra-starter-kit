@@ -4,7 +4,7 @@ Welcome to the **Cadabra Hackathon Starter Kit**! The core goal of this hackatho
 
 💬 **Join our Discord for help, announcements, and team coordination:** [discord.gg/vpHdpacT](https://discord.gg/vpHdpacT)
 
-Your smart contracts can ask an AI a question and receive an answer - all fully on-chain, trustlessly, and without any centralized API keys. This repository is designed to help you quickly integrate your smart contracts with the global `CadabraInference` service.
+Your smart contracts can ask an AI a question and receive an answer - all fully on-chain, trustlessly. This repository is designed to help you quickly integrate your smart contracts with the global `CadabraInference` service.
 
 ## Quick Start - What You Need to Know
 
@@ -23,11 +23,14 @@ All development happens on **Sepolia**, a free testnet for the Ethereum blockcha
 ### Step 1: Set Up MetaMask
 
 1. Install the [MetaMask browser extension](https://metamask.io/download/) if you don't have it.
+
+> ⚠️ **Security Note:** Never use your real mainnet wallet for hackathon development. Create a fresh MetaMask account specifically for this event. 
+
 2. **Enable Test Networks:** Sepolia is built into MetaMask by default. To see it, open MetaMask, click the network dropdown at the top left, and toggle **"Show test networks"**. Then select **Sepolia**.
+
 3. If you don't see it or prefer to add it manually: Open MetaMask → Settings 
 → Networks → Add Network, and enter the details from the table above.
 
-> ⚠️ **Security Note:** Never use your real mainnet wallet for hackathon development. Create a fresh MetaMask account specifically for this event. 
 
 ### Step 2: Get Free Testnet ETH
 
@@ -39,16 +42,12 @@ You need testnet ETH to deploy contracts and send transactions. Here's how:
 
 ---
 
-## Included Reference Apps
+## Included Reference App
 
-This template contains a working reference implementation to help you get started immediately:
+This repo contains a working reference implementation to help you get started immediately:
+**[Public Chat App (`apps/chat`)](./apps/chat)** is a classic multi-user interface where messages are stored on-chain and answered by the decentralized AI agent.
 
-1. **[Public Chat App (`apps/chat`)](./apps/chat)**
-   A classic multi-user interface where messages are stored on-chain and answered by the decentralized AI agent.
-
-## Folder Structure
-
-Each app in the `apps/` directory is an independent, full-stack Web3 application containing:
+The folder contains a full-stack Web3 application with:
 - `contracts/`: A Foundry project containing the Smart Contracts. Foundry is a toolkit for building, testing, and deploying Solidity smart contracts from the command line.
 - `web/`: A modern Vite + React frontend powered by `viem`. Vite is a fast frontend build tool and development server for running the React app locally and bundling it for deployment.
 
@@ -56,15 +55,15 @@ Each app in the `apps/` directory is an independent, full-stack Web3 application
 
 ## How to Run an Example
 
-Let's walk through running the **Chat App** (`apps/chat`) - a multi-user chat interface where messages are stored on-chain and answered by the decentralized AI agent.
+Let's walk through running the **Chat App** (`apps/chat`).
 
 > **Note:** The repository ships with an already-deployed Chat contract on Sepolia, so you can run the frontend immediately without deploying anything yourself. If you want to modify the Solidity code and deploy your own version, see the [Deploy Your Own Contract](#optional-deploy-your-own-contract) section below.
 
 ### Prerequisites
 
 Before starting, make sure you have:
-- **Node.js v22+** - [Download here](https://nodejs.org/). Node.js runs JavaScript outside the browser and provides `npm`, the package manager used to install dependencies and start the web app.
-- **Foundry** (for compiling and deploying Solidity contracts, *only needed if deploying your own contract*):
+- **Node.js v22+** - Node.js runs JavaScript outside the browser and provides `npm`, the package manager used to install dependencies and start the web app. Download [here](https://nodejs.org/). 
+- **Foundry**. For compiling and deploying Solidity contracts. *Only needed if deploying your own contract*. Install with:
   ```bash
   curl -L https://foundry.paradigm.xyz | bash
   foundryup
@@ -94,7 +93,7 @@ Open `http://localhost:5173` in your browser, connect MetaMask, and start chatti
 
 ---
 
-### (Optional) Deploy Your Own Contract
+### Deploy Your Own Contract
 
 If you want to modify the Solidity code and deploy your own version of the contract, you can easily do so. To protect your private key, we recommend prompting for it inline rather than saving it in an environment file.
 
@@ -118,7 +117,7 @@ When you run the deployment script, it automatically creates or updates the `web
 
 ## Local Development (Anvil + Mock Agent)
 
-If you prefer to develop locally without spending testnet Sepolia ETH or waiting for block confirmations, you can run the entire AI infrastructure on your own machine. We have provided a self-contained local setup in the `local-setup` folder.
+If you prefer to develop locally without spending testnet Sepolia ETH or waiting for block confirmations, you can run the entire AI infrastructure on your own machine. We provide a self-contained local setup in the `local-setup` folder.
 
 1. **Start Anvil (Local Blockchain)**
    *(If you don't have Anvil, install [Foundry](https://book.getfoundry.sh/getting-started/installation))*
