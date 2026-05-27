@@ -1,8 +1,8 @@
 {
-  "chainId": 31337,
-  "rpcUrl": "http://127.0.0.1:8545",
+  "chainId": 84532,
+  "rpcUrl": "https://base-sepolia-rpc.publicnode.com",
   "inference": {
-    "address": "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+    "address": "0x989e76befe3d464a4b1871fbc53897f889d3eaa9",
     "abi": [
       {
         "type": "constructor",

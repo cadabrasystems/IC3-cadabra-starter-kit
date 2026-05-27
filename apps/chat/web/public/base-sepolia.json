@@ -2,7 +2,7 @@
   "chainId": 84532,
   "rpcUrl": "https://base-sepolia-rpc.publicnode.com",
   "inference": {
-    "address": "0xb189678014ae6568319efe4dfd8df12857871444",
+    "address": "0x989e76befe3d464a4b1871fbc53897f889d3eaa9",
     "abi": [
       {
         "type": "function",
@@ -103,7 +103,7 @@
     ]
   },
   "chat": {
-    "address": "0x54fa0ecf4e106e628729771f9371d3904050885f",
+    "address": "0xe78cce1a68b19acd1e066a47e271f59b84f96360",
     "abi": [
       {
         "type": "constructor",
@@ -115,6 +115,19 @@
           }
         ],
         "stateMutability": "nonpayable"
+      },
+      {
+        "type": "function",
+        "name": "REQUEST_TIMEOUT",
+        "inputs": [],
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ],
+        "stateMutability": "view"
       },
       {
         "type": "function",
@@ -185,6 +198,11 @@
             "name": "pendingRequestId",
             "type": "uint256",
             "internalType": "uint256"
+          },
+          {
+            "name": "pendingRequestTimestamp",
+            "type": "uint256",
+            "internalType": "uint256"
           }
         ],
         "stateMutability": "view"
@@ -235,6 +253,11 @@
               },
               {
                 "name": "pendingRequestId",
+                "type": "uint256",
+                "internalType": "uint256"
+              },
+              {
+                "name": "pendingRequestTimestamp",
                 "type": "uint256",
                 "internalType": "uint256"
               }
@@ -456,6 +479,25 @@
             "type": "string",
             "indexed": false,
             "internalType": "string"
+          }
+        ],
+        "anonymous": false
+      },
+      {
+        "type": "event",
+        "name": "PendingRequestExpired",
+        "inputs": [
+          {
+            "name": "chatId",
+            "type": "uint256",
+            "indexed": true,
+            "internalType": "uint256"
+          },
+          {
+            "name": "requestId",
+            "type": "uint256",
+            "indexed": true,
+            "internalType": "uint256"
           }
         ],
         "anonymous": false
