@@ -4,12 +4,12 @@ Welcome to the **Cadabra Hackathon Starter Kit**! The core goal of this hackatho
 
 💬 **Join our Discord for help, announcements, and team coordination:** [discord.gg/vpHdpacT](https://discord.gg/vpHdpacT)
 
-Your smart contracts can ask an AI a question and receive an answer - all fully on-chain, trustlessly. This repository is designed to help you quickly integrate your smart contracts with the global `CadabraInference` service.
+Your smart contracts can ask an AI a question and receive an answer, all fully on-chain, trustlessly. This repository is designed to help you quickly integrate your smart contracts with the global `CadabraInference` service.
 
 ## Table of Contents
 - [Live Demo](#live-demo)
 - [Architecture: How Apps Access the AI](#architecture-how-apps-access-the-ai)
-- [Quick Start - What You Need to Know](#quick-start---what-you-need-to-know)
+- [Quick Start: What You Need to Know](#quick-start-what-you-need-to-know)
 - [Included Reference App](#included-reference-app)
 - [How to Run an Example](#how-to-run-an-example)
   - [Deploy Your Own Contract](#deploy-your-own-contract)
@@ -21,7 +21,7 @@ Your smart contracts can ask an AI a question and receive an answer - all fully 
 
 ## Live Demo
 
-Check out a live, working deployment of the Chat App to see exactly what you'll be building:
+Check out a live, working deployment of the Chat App to see an example of an application that relies on the inference contract:
 
 🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-for-vercel-ten.vercel.app)**
 
@@ -33,7 +33,7 @@ Connect your MetaMask wallet (on the Sepolia network), send a message, and watch
 
 The Chat reference app interacts with the AI inference service through a standard Solidity interface, making it incredibly easy to build your own dApps on top of the same infrastructure.
 
-The core idea is simple: your smart contract sends a **plain-text prompt** (any string - a question, instruction, or conversation history) to the inference service, and receives back a **plain-text answer** from an AI agent. The prompt is just text; there is no special format required. You request an inference, then later check its state - once finalized, the result (the AI's response) is available to read on-chain.
+The core idea is simple: your smart contract sends a **plain-text prompt** (any string: a question, instruction, or conversation history) to the inference service, and receives back a **plain-text answer** from an AI agent. The prompt is just text; there is no special format required. You request an inference, then later check its state; once finalized, the result (the AI's response) is available to read on-chain.
 
 ### The `IDecentralizedAI` Interface
 
@@ -47,10 +47,10 @@ We provide a copy of the interface at the root of this repository for easy refer
 | `getRequest(uint256 requestId)` → `(RequestState, query, output, proposer, timestamp)` | Returns the full details of a request, including its current lifecycle state. |
 
 Every request goes through a lifecycle tracked by the `RequestState` enum:
-- **`Unproposed`** - The query has been submitted but no AI Agent has responded yet.
-- **`Proposed`** - An Agent has submitted a candidate answer and staked a bond.
-- **`InDispute`** - Another agent has challenged the proposed answer.
-- **`Finalized`** - The answer is accepted and immutable. `getResult()` will return the final output.
+- **`Unproposed`**: The query has been submitted but no AI Agent has responded yet.
+- **`Proposed`**: An Agent has submitted a candidate answer and staked a bond.
+- **`InDispute`**: Another agent has challenged the proposed answer.
+- **`Finalized`**: The answer is accepted and immutable. `getResult()` will return the final output.
 
 ### How Your App Contract Uses It
 
@@ -67,7 +67,7 @@ contract MyApp {
     }
 
     function askAI(string memory question) external {
-        // 1. Send the query - returns a unique requestId
+        // 1. Send the query and receive a unique requestId
         uint256 requestId = inferenceService.requestInference(question);
 
         // 2. Store the requestId so you can settle later
@@ -100,18 +100,18 @@ User (MetaMask) → Your App Contract → inferenceService.requestInference(quer
                                               ↓
                               Frontend polls isReady() + getResult() (free view calls)
                                               ↓
-                              Answer displayed - no backend needed!
+                              Answer displayed (no backend needed!)
 ```
 
 > **Note:** No orchestrator or backend server is required. The frontend polls the inference service directly using `isReady()` and `getResult()`, which are free read-only calls that cost zero gas.
 
 ---
 
-## Quick Start - What You Need to Know
+## Quick Start: What You Need to Know
 
 ### The Network: Sepolia
 
-All development happens on **Sepolia**, a free testnet for the Ethereum blockchain. You will deploy contracts, send transactions, and interact with the AI inference service entirely on this network. It costs nothing - all ETH used is free testnet ETH.
+All development happens on **Sepolia**, a free testnet for the Ethereum blockchain. You will deploy contracts, send transactions, and interact with the AI inference service entirely on this network. It costs nothing, as all ETH used is free testnet ETH.
 
 | Detail | Value |
 |---|---|
@@ -164,7 +164,7 @@ Let's walk through running the **Chat App** (`apps/chat`).
 ### Prerequisites
 
 Before starting, make sure you have:
-- **Node.js v22+** - Node.js runs JavaScript outside the browser and provides `npm`, the package manager used to install dependencies and start the web app. Download [here](https://nodejs.org/). 
+- **Node.js v22+**: Node.js runs JavaScript outside the browser and provides `npm`, the package manager used to install dependencies and start the web app. Download [here](https://nodejs.org/). 
 - **Foundry**. For compiling and deploying Solidity contracts. *Only needed if deploying your own contract*. Install with:
   ```bash
   curl -L https://foundry.paradigm.xyz | bash
@@ -298,7 +298,7 @@ Since the frontend reads AI answers directly from the inference service (no back
 The `web/` folder is a standard Vite + React app that can be deployed to Vercel, Netlify, GitHub Pages, or any static hosting provider.
 
 **Vercel Deployment Steps:**
-1. Push your code to GitHub (make sure `web/public/sepolia.json` is committed - it contains your deployed contract address and ABI).
+1. Push your code to GitHub (make sure `web/public/sepolia.json` is committed, as it contains your deployed contract address and ABI).
 2. Go to [vercel.com](https://vercel.com), click **Add New Project**, and import your repository.
 3. Set the **Root Directory** to your app's `web` folder (e.g. `hackathon-starter-kit/apps/chat/web`).
 4. Add the following **Environment Variable** (under Settings → Environment Variables):
