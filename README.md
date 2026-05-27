@@ -6,6 +6,107 @@ Welcome to the **Cadabra Hackathon Starter Kit**! The core goal of this hackatho
 
 Your smart contracts can ask an AI a question and receive an answer - all fully on-chain, trustlessly. This repository is designed to help you quickly integrate your smart contracts with the global `CadabraInference` service.
 
+## Table of Contents
+- [Live Demo](#live-demo)
+- [Architecture: How Apps Access the AI](#architecture-how-apps-access-the-ai)
+- [Quick Start - What You Need to Know](#quick-start---what-you-need-to-know)
+- [Included Reference App](#included-reference-app)
+- [How to Run an Example](#how-to-run-an-example)
+  - [Deploy Your Own Contract](#deploy-your-own-contract)
+- [Local Development (Anvil + Mock Agent)](#local-development-anvil--mock-agent)
+- [Deploying to the Cloud](#deploying-to-the-cloud)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## Live Demo
+
+Check out a live, working deployment of the Chat App to see exactly what you'll be building:
+
+🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-for-vercel-ten.vercel.app)**
+
+Connect your MetaMask wallet (on the Sepolia network), send a message, and watch the decentralized AI respond in real-time!
+
+---
+
+## Architecture: How Apps Access the AI
+
+The Chat reference app interacts with the AI inference service through a standard Solidity interface, making it incredibly easy to build your own dApps on top of the same infrastructure.
+
+The core idea is simple: your smart contract sends a **plain-text prompt** (any string - a question, instruction, or conversation history) to the inference service, and receives back a **plain-text answer** from an AI agent. The prompt is just text; there is no special format required. You request an inference, then later check its state - once finalized, the result (the AI's response) is available to read on-chain.
+
+### The `IDecentralizedAI` Interface
+
+We provide a copy of the interface at the root of this repository for easy reference: [`interfaces/IDecentralizedAI.sol`](./interfaces/IDecentralizedAI.sol). This is the universal interface your smart contract imports to talk to the AI inference service. It is fully documented with NatSpec comments and a usage example. It exposes four functions:
+
+| Function | Description |
+|---|---|
+| `requestInference(string query)` → `uint256 requestId` | Sends a natural-language query to the AI. Returns a unique `requestId` you use to track and retrieve the result. |
+| `isReady(uint256 requestId)` → `bool` | Returns `true` once the AI Agent has proposed and finalized the answer for a given request. |
+| `getResult(uint256 requestId)` → `string output` | Returns the current output for a request. Before any agent has proposed, this is an empty string `""`. After proposal but before finalization, it returns the proposed (not yet finalized) answer. Always check `isReady()` first to confirm the result is final. |
+| `getRequest(uint256 requestId)` → `(RequestState, query, output, proposer, timestamp)` | Returns the full details of a request, including its current lifecycle state. |
+
+Every request goes through a lifecycle tracked by the `RequestState` enum:
+- **`Unproposed`** - The query has been submitted but no AI Agent has responded yet.
+- **`Proposed`** - An Agent has submitted a candidate answer and staked a bond.
+- **`InDispute`** - Another agent has challenged the proposed answer.
+- **`Finalized`** - The answer is accepted and immutable. `getResult()` will return the final output.
+
+### How Your App Contract Uses It
+
+Here is the pattern used by `PublicChat.sol`:
+
+```solidity
+import "./interfaces/IDecentralizedAI.sol";
+
+contract MyApp {
+    IDecentralizedAI public immutable inferenceService;
+
+    constructor(address inference) {
+        inferenceService = IDecentralizedAI(inference);
+    }
+
+    function askAI(string memory question) external {
+        // 1. Send the query - returns a unique requestId
+        uint256 requestId = inferenceService.requestInference(question);
+
+        // 2. Store the requestId so you can settle later
+        // ...
+    }
+
+    function settleAnswer(uint256 requestId) external {
+        // 3. Check if the answer is ready
+        require(inferenceService.isReady(requestId), "Not ready yet");
+
+        // 4. Retrieve the AI's answer
+        string memory answer = inferenceService.getResult(requestId);
+
+        // 5. Use it however you want!
+        // ...
+    }
+}
+```
+
+### The Full Request Flow
+
+```text
+User (MetaMask) → Your App Contract → inferenceService.requestInference(query)
+                                              ↓
+                              Event emitted on-chain
+                                              ↓
+                              AI Agent detects event, calls OpenAI
+                                              ↓
+                              Agent calls proposeResult() + resolve()
+                                              ↓
+                              Frontend polls isReady() + getResult() (free view calls)
+                                              ↓
+                              Answer displayed - no backend needed!
+```
+
+> **Note:** No orchestrator or backend server is required. The frontend polls the inference service directly using `isReady()` and `getResult()`, which are free read-only calls that cost zero gas.
+
+---
+
 ## Quick Start - What You Need to Know
 
 ### The Network: Sepolia
@@ -28,8 +129,7 @@ All development happens on **Sepolia**, a free testnet for the Ethereum blockcha
 
 2. **Enable Test Networks:** Sepolia is built into MetaMask by default. To see it, open MetaMask, click the network dropdown at the top left, and toggle **"Show test networks"**. Then select **Sepolia**.
 
-3. If you don't see it or prefer to add it manually: Open MetaMask → Settings 
-→ Networks → Add Network, and enter the details from the table above.
+3. If you don't see it or prefer to add it manually: Open MetaMask → Settings → Networks → Add Network, and enter the details from the table above.
 
 
 ### Step 2: Get Free Testnet ETH
@@ -53,11 +153,13 @@ The folder contains a full-stack Web3 application with:
 
 > **No backend server or orchestrator is needed!** The frontend reads AI answers directly from the inference service using free `view` calls. You just deploy a contract and host a static website.
 
+---
+
 ## How to Run an Example
 
 Let's walk through running the **Chat App** (`apps/chat`).
 
-> **Note:** The repository ships with an already-deployed Chat contract on Sepolia, so you can run the frontend immediately without deploying anything yourself. If you want to modify the Solidity code and deploy your own version, see the [Deploy Your Own Contract](#optional-deploy-your-own-contract) section below.
+> **Note:** The repository ships with an already-deployed Chat contract on Sepolia, so you can run the frontend immediately without deploying anything yourself. If you want to modify the Solidity code and deploy your own version, see the [Deploy Your Own Contract](#deploy-your-own-contract) section below.
 
 ### Prerequisites
 
@@ -114,6 +216,8 @@ If you want to modify the Solidity code and deploy your own version of the contr
 
 **How does the web app know about your new contract?**
 When you run the deployment script, it automatically creates or updates the `web/public/sepolia.json` file with your newly deployed contract address and ABI. The web frontend reads this file on startup, so all you need to do is refresh your browser to interact with your new contract!
+
+---
 
 ## Local Development (Anvil + Mock Agent)
 
@@ -185,82 +289,6 @@ If you prefer to develop locally without spending testnet Sepolia ETH or waiting
 
 ---
 
-## Architecture: How Apps Access the AI
-
-The Chat reference app interacts with the AI inference service through a standard Solidity interface, making it incredibly easy to build your own dApps on top of the same infrastructure.
-
-The core idea is simple: your smart contract sends a **plain-text prompt** (any string - a question, instruction, or conversation history) to the inference service, and receives back a **plain-text answer** from an AI agent. The prompt is just text; there is no special format required. You request an inference, then later check its state - once finalized, the result (the AI's response) is available to read on-chain.
-
-### The `IDecentralizedAI` Interface
-
-We provide a copy of the interface at the root of this repository for easy reference: [`interfaces/IDecentralizedAI.sol`](./interfaces/IDecentralizedAI.sol). This is the universal interface your smart contract imports to talk to the AI inference service. It is fully documented with NatSpec comments and a usage example. It exposes four functions:
-
-| Function | Description |
-|---|---|
-| `requestInference(string query)` → `uint256 requestId` | Sends a natural-language query to the AI. Returns a unique `requestId` you use to track and retrieve the result. |
-| `isReady(uint256 requestId)` → `bool` | Returns `true` once the AI Agent has proposed and finalized the answer for a given request. |
-| `getResult(uint256 requestId)` → `string output` | Returns the current output for a request. Before any agent has proposed, this is an empty string `""`. After proposal but before finalization, it returns the proposed (not yet finalized) answer. Always check `isReady()` first to confirm the result is final. |
-| `getRequest(uint256 requestId)` → `(RequestState, query, output, proposer, timestamp)` | Returns the full details of a request, including its current lifecycle state. |
-
-Every request goes through a lifecycle tracked by the `RequestState` enum:
-- **`Unproposed`** - The query has been submitted but no AI Agent has responded yet.
-- **`Proposed`** - An Agent has submitted a candidate answer and staked a bond.
-- **`InDispute`** - Another agent has challenged the proposed answer.
-- **`Finalized`** - The answer is accepted and immutable. `getResult()` will return the final output.
-
-### How Your App Contract Uses It
-
-Here is the pattern used by `PublicChat.sol`:
-
-```solidity
-import "./interfaces/IDecentralizedAI.sol";
-
-contract MyApp {
-    IDecentralizedAI public immutable inferenceService;
-
-    constructor(address inference) {
-        inferenceService = IDecentralizedAI(inference);
-    }
-
-    function askAI(string memory question) external {
-        // 1. Send the query - returns a unique requestId
-        uint256 requestId = inferenceService.requestInference(question);
-
-        // 2. Store the requestId so you can settle later
-        // ...
-    }
-
-    function settleAnswer(uint256 requestId) external {
-        // 3. Check if the answer is ready
-        require(inferenceService.isReady(requestId), "Not ready yet");
-
-        // 4. Retrieve the AI's answer
-        string memory answer = inferenceService.getResult(requestId);
-
-        // 5. Use it however you want!
-        // ...
-    }
-}
-```
-
-### The Full Request Flow
-
-```
-User (MetaMask) → Your App Contract → inferenceService.requestInference(query)
-                                              ↓
-                              Event emitted on-chain
-                                              ↓
-                              AI Agent detects event, calls OpenAI
-                                              ↓
-                              Agent calls proposeResult() + resolve()
-                                              ↓
-                              Frontend polls isReady() + getResult() (free view calls)
-                                              ↓
-                              Answer displayed - no backend needed!
-```
-
-> **Note:** No orchestrator or backend server is required. The frontend polls the inference service directly using `isReady()` and `getResult()`, which are free read-only calls that cost zero gas.
-
 ## Deploying to the Cloud
 
 Since the frontend reads AI answers directly from the inference service (no backend needed!), deploying is as simple as hosting a static website.
@@ -280,6 +308,8 @@ The `web/` folder is a standard Vite + React app that can be deployed to Vercel,
 
 > **Important:** Every time you redeploy a new smart contract (which generates a new `sepolia.json`), you must commit the updated JSON file, push to GitHub, and **Redeploy** on Vercel (without build cache) so the frontend picks up the new contract address.
 
+---
+
 ## Troubleshooting
 
 ### MetaMask "Still connecting to Sepolia Testnet" / "Update RPC" Error
@@ -288,11 +318,3 @@ If MetaMask is stuck loading or fails to connect to the Sepolia network, it mean
 
 ### Vercel: Page loads but app is stuck / "localhost.json 404"
 This means the `VITE_NETWORK` environment variable is missing or not set for the **Production** environment. Go to Vercel Settings → Environment Variables, set `VITE_NETWORK=sepolia` with the **Production** checkbox enabled, and **Redeploy without build cache**.
-
-## Live Demo
-
-Check out a live, working deployment of the Chat App to see exactly what you'll be building:
-
-🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-for-vercel-ten.vercel.app)**
-
-Connect your MetaMask wallet (on the Sepolia network), send a message, and watch the decentralized AI respond in real-time!
