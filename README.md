@@ -23,7 +23,7 @@ Your smart contracts can ask an AI a question and receive an answer, all fully o
 
 Check out a live, working deployment of the Chat App to see an example of an application that relies on the inference contract:
 
-🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-for-vercel-ten.vercel.app)**
+🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-for-vercel.vercel.app?_vercel_share=s1pjXWfwsayJiA5Gf7BqL6fRxP1KMvGg)**
 
 Connect your MetaMask wallet (on the Sepolia network), send a message, and watch the decentralized AI respond in real-time!
 
