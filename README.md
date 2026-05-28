@@ -25,7 +25,7 @@ Check out a live, working deployment of the Chat App to see an example of an app
 
 🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-for-vercel.vercel.app?_vercel_share=s1pjXWfwsayJiA5Gf7BqL6fRxP1KMvGg)**
 
-Connect your MetaMask wallet (on the Base Sepolia network), send a message, and watch the decentralized AI respond in real-time!
+Connect your MetaMask wallet (on the Base Sepolia network), send a message, and watch the decentralized AI respond in real-time! *(Need help setting up your wallet? See the [Step 1: Set Up MetaMask](#step-1-set-up-metamask) section below.)*
 
 ---
 
@@ -136,7 +136,7 @@ All development happens on **Base Sepolia**, a free testnet for the Base L2 netw
 
 You need testnet ETH to deploy contracts and send transactions. Here's how:
 
-1. **Get Base Sepolia ETH**: Claim free ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/base-sepolia) (or any other Base Sepolia faucet). Paste your MetaMask wallet address and claim.
+1. **Get Base Sepolia ETH**: You can use any Base Sepolia faucet, or get Sepolia ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia) and bridge it using [Superbridge](https://superbridge.app/base-sepolia).
 
 > **Tip:** You only need a small amount of ETH (0.01 - 0.05 is plenty) to deploy contracts and send messages during the hackathon.
 
@@ -250,6 +250,7 @@ If you prefer to develop locally without spending testnet Base Sepolia ETH or wa
 
 4. **Run the Starter Apps Locally**
    Now that your local infrastructure is running, you can run the sample apps against it. Use the `localhost-env.sh` script instead of `base-sepolia-env.sh`.
+   *(Note: All 10 default Anvil accounts start pre-funded with 10,000 local ETH. You will need to configure MetaMask for your local Anvil chain to interact with the frontend—see the detailed setup section just below!)*
 
    For example, to run the Chat app locally:
    ```bash
