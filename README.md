@@ -25,7 +25,7 @@ Check out a live, working deployment of the Chat App to see an example of an app
 
 🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-for-vercel.vercel.app?_vercel_share=s1pjXWfwsayJiA5Gf7BqL6fRxP1KMvGg)**
 
-Connect your MetaMask wallet (on the Sepolia network), send a message, and watch the decentralized AI respond in real-time!
+Connect your MetaMask wallet (on the Base Sepolia network), send a message, and watch the decentralized AI respond in real-time!
 
 ---
 
@@ -109,17 +109,17 @@ User (MetaMask) → Your App Contract → inferenceService.requestInference(quer
 
 ## Quick Start: What You Need to Know
 
-### The Network: Sepolia
+### The Network: Base Sepolia
 
-All development happens on **Sepolia**, a free testnet for the Ethereum blockchain. You will deploy contracts, send transactions, and interact with the AI inference service entirely on this network. It costs nothing, as all ETH used is free testnet ETH.
+All development happens on **Base Sepolia**, a free testnet for the Base L2 network. You will deploy contracts, send transactions, and interact with the AI inference service entirely on this network. It costs nothing, as all ETH used is free testnet ETH.
 
 | Detail | Value |
 |---|---|
-| **Network Name** | Sepolia |
-| **Public RPC URL** | `https://ethereum-sepolia-rpc.publicnode.com` |
-| **Chain ID** | `11155111` |
-| **Currency Symbol** | ETH (testnet) |
-| **Block Explorer URL** | [sepolia.etherscan.io](https://sepolia.etherscan.io) |
+| **Network Name** | Base Sepolia Testnet |
+| **Public RPC URL** | `https://base-sepolia-rpc.publicnode.com` |
+| **Chain ID** | `84532` |
+| **Currency Symbol** | ETH |
+| **Block Explorer URL** | [sepolia.basescan.org](https://sepolia.basescan.org) |
 
 ### Step 1: Set Up MetaMask
 
@@ -127,16 +127,16 @@ All development happens on **Sepolia**, a free testnet for the Ethereum blockcha
 
 > ⚠️ **Security Note:** Never use your real mainnet wallet for hackathon development. Create a fresh MetaMask account specifically for this event. 
 
-2. **Enable Test Networks:** Sepolia is built into MetaMask by default. To see it, open MetaMask, click the network dropdown at the top left, and toggle **"Show test networks"**. Then select **Sepolia**.
+2. **Enable Test Networks:** Open MetaMask, click the network dropdown at the top left, and toggle **"Show test networks"**.
 
-3. If you don't see it or prefer to add it manually: Open MetaMask → Settings → Networks → Add Network, and enter the details from the table above.
+3. **Add Base Sepolia:** Since every MetaMask version is a bit different, generally go to MetaMask Networks settings to add a new network, and enter the details from the table above for Base Sepolia Testnet.
 
 
 ### Step 2: Get Free Testnet ETH
 
 You need testnet ETH to deploy contracts and send transactions. Here's how:
 
-1. **Get Sepolia ETH**: Claim free ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia) (or any other Sepolia faucet). Paste your MetaMask wallet address and claim.
+1. **Get Base Sepolia ETH**: Claim free ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/base-sepolia) (or any other Base Sepolia faucet). Paste your MetaMask wallet address and claim.
 
 > **Tip:** You only need a small amount of ETH (0.01 - 0.05 is plenty) to deploy contracts and send messages during the hackathon.
 
@@ -159,7 +159,7 @@ The folder contains a full-stack Web3 application with:
 
 Let's walk through running the **Chat App** (`apps/chat`).
 
-> **Note:** The repository ships with an already-deployed Chat contract on Sepolia, so you can run the frontend immediately without deploying anything yourself. If you want to modify the Solidity code and deploy your own version, see the [Deploy Your Own Contract](#deploy-your-own-contract) section below.
+> **Note:** The repository ships with an already-deployed Chat contract on Base Sepolia, so you can run the frontend immediately without deploying anything yourself. If you want to modify the Solidity code and deploy your own version, see the [Deploy Your Own Contract](#deploy-your-own-contract) section below.
 
 ### Prerequisites
 
@@ -185,7 +185,7 @@ npm run install:all
 ```
 
 ### 3. Start the Web App
-Since the chat contract is already deployed on Sepolia, you can start the frontend right away:
+Since the chat contract is already deployed on Base Sepolia, you can start the frontend right away:
 
 ```bash
 npm --prefix web run dev
@@ -199,9 +199,9 @@ Open `http://localhost:5173` in your browser, connect MetaMask, and start chatti
 
 If you want to modify the Solidity code and deploy your own version of the contract, you can easily do so. To protect your private key, we recommend prompting for it inline rather than saving it in an environment file.
 
-1. Load the Sepolia environment (this points the deployment script to the global AI inference service):
+1. Load the Base Sepolia environment (this points the deployment script to the global AI inference service):
    ```bash
-   source sepolia-env.sh
+   source base-sepolia-env.sh
    ```
 2. Export your private key securely (this prompts you to paste it without showing it on screen or saving it in your bash history):
    ```bash
@@ -215,13 +215,13 @@ If you want to modify the Solidity code and deploy your own version of the contr
    ```
 
 **How does the web app know about your new contract?**
-When you run the deployment script, it automatically creates or updates the `web/public/sepolia.json` file with your newly deployed contract address and ABI. The web frontend reads this file on startup, so all you need to do is refresh your browser to interact with your new contract!
+When you run the deployment script, it automatically creates or updates the `web/public/base-sepolia.json` file with your newly deployed contract address and ABI. The web frontend reads this file on startup, so all you need to do is refresh your browser to interact with your new contract!
 
 ---
 
 ## Local Development (Anvil + Mock Agent)
 
-If you prefer to develop locally without spending testnet Sepolia ETH or waiting for block confirmations, you can run the entire AI infrastructure on your own machine. We provide a self-contained local setup in the `local-setup` folder.
+If you prefer to develop locally without spending testnet Base Sepolia ETH or waiting for block confirmations, you can run the entire AI infrastructure on your own machine. We provide a self-contained local setup in the `local-setup` folder.
 
 1. **Start Anvil (Local Blockchain)**
    *(If you don't have Anvil, install [Foundry](https://book.getfoundry.sh/getting-started/installation))*
@@ -249,7 +249,7 @@ If you prefer to develop locally without spending testnet Sepolia ETH or waiting
    *(Keep this terminal open)*
 
 4. **Run the Starter Apps Locally**
-   Now that your local infrastructure is running, you can run the sample apps against it. Use the `localhost-env.sh` script instead of `sepolia-env.sh`.
+   Now that your local infrastructure is running, you can run the sample apps against it. Use the `localhost-env.sh` script instead of `base-sepolia-env.sh`.
 
    For example, to run the Chat app locally:
    ```bash
@@ -298,23 +298,23 @@ Since the frontend reads AI answers directly from the inference service (no back
 The `web/` folder is a standard Vite + React app that can be deployed to Vercel, Netlify, GitHub Pages, or any static hosting provider.
 
 **Vercel Deployment Steps:**
-1. Push your code to GitHub (make sure `web/public/sepolia.json` is committed, as it contains your deployed contract address and ABI).
+1. Push your code to GitHub (make sure `web/public/base-sepolia.json` is committed, as it contains your deployed contract address and ABI).
 2. Go to [vercel.com](https://vercel.com), click **Add New Project**, and import your repository.
 3. Set the **Root Directory** to your app's `web` folder (e.g. `hackathon-starter-kit/apps/chat/web`).
 4. Add the following **Environment Variable** (under Settings → Environment Variables):
-   - **Key:** `VITE_NETWORK`  **Value:** `sepolia`
+   - **Key:** `VITE_NETWORK`  **Value:** `base-sepolia`
    - ⚠️ Make sure to enable it for **Production** (not just Development!).
 5. Click **Deploy**.
 
-> **Important:** Every time you redeploy a new smart contract (which generates a new `sepolia.json`), you must commit the updated JSON file, push to GitHub, and **Redeploy** on Vercel (without build cache) so the frontend picks up the new contract address.
+> **Important:** Every time you redeploy a new smart contract (which generates a new `base-sepolia.json`), you must commit the updated JSON file, push to GitHub, and **Redeploy** on Vercel (without build cache) so the frontend picks up the new contract address.
 
 ---
 
 ## Troubleshooting
 
-### MetaMask "Still connecting to Sepolia Testnet" / "Update RPC" Error
-If MetaMask is stuck loading or fails to connect to the Sepolia network, it means the default public RPC is congested or down. To fix this, click "Update RPC" in MetaMask (or go to Settings -> Networks -> Sepolia) and change the **New RPC URL** to one of these reliable public backups:
-- `https://ethereum-sepolia-rpc.publicnode.com`
+### MetaMask "Still connecting to Base Sepolia Testnet" / "Update RPC" Error
+If MetaMask is stuck loading or fails to connect to the Base Sepolia network, it means the default public RPC is congested or down. To fix this, click "Update RPC" in MetaMask (or go to Settings -> Networks -> Base Sepolia Testnet) and change the **New RPC URL** to one of these reliable public backups:
+- `https://base-sepolia-rpc.publicnode.com`
 
 ### Vercel: Page loads but app is stuck / "localhost.json 404"
-This means the `VITE_NETWORK` environment variable is missing or not set for the **Production** environment. Go to Vercel Settings → Environment Variables, set `VITE_NETWORK=sepolia` with the **Production** checkbox enabled, and **Redeploy without build cache**.
+This means the `VITE_NETWORK` environment variable is missing or not set for the **Production** environment. Go to Vercel Settings → Environment Variables, set `VITE_NETWORK=base-sepolia` with the **Production** checkbox enabled, and **Redeploy without build cache**.
