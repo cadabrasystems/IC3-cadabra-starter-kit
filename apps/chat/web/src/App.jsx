@@ -47,6 +47,8 @@ export default function App() {
   const [deploymentConfig, setDeploymentConfig] = useState(null);
   const messagesEndRef = useRef(null);
   const settlingRef = useRef(new Set()); // track in-flight settleMessage calls
+  const optimisticMessageRef = useRef(null);
+  const isSendingTxRef = useRef(false);
 
   // Load deployment config and create a read-only public client (no MetaMask needed)
   useEffect(() => {
@@ -164,6 +166,19 @@ export default function App() {
             content: m.content
           }));
 
+          if (optimisticMessageRef.current) {
+            const contractUserMsgsCount = displayMessages.filter(m => m.role === 'user').length;
+            if (contractUserMsgsCount >= optimisticMessageRef.current.expectedCount) {
+              optimisticMessageRef.current = null;
+            } else {
+              displayMessages.push({ 
+                role: 'user', 
+                content: optimisticMessageRef.current.content, 
+                isPending: true 
+              });
+            }
+          }
+
           // Check if there's a pending AI request
           const chatDetails = chats.find(c => Number(c.id) === activeChatId);
           if (chatDetails && Number(chatDetails.pendingRequestTimestamp) > 0) {
@@ -239,8 +254,10 @@ export default function App() {
               }
             }
           } else {
-            setIsLoading(false);
-            setPendingStatus(null);
+            if (!isSendingTxRef.current) {
+              setIsLoading(false);
+              setPendingStatus(null);
+            }
           }
 
           setMessages(displayMessages);
@@ -282,17 +299,25 @@ export default function App() {
     const content = inputValue.trim();
     setInputValue('');
     setIsLoading(true);
+    isSendingTxRef.current = true;
+    
+    const currentUserCount = messages.filter(m => m.role === 'user' && !m.isPending).length;
+    optimisticMessageRef.current = { content, expectedCount: currentUserCount + 1 };
 
     // Optimistic UI update
-    setMessages(prev => [...prev, { role: 'user', content }]);
+    setMessages(prev => [...prev, { role: 'user', content, isPending: true }]);
 
     try {
       const [account] = await walletClient.getAddresses();
       const txHash = await contract.write.sendMessage([BigInt(activeChatId), content], { account });
       await publicClient.waitForTransactionReceipt({ hash: txHash });
+      isSendingTxRef.current = false;
     } catch (err) {
       console.error(err);
+      isSendingTxRef.current = false;
+      optimisticMessageRef.current = null;
       setIsLoading(false);
+      setMessages(prev => prev.filter(m => !(m.isPending && m.content === content)));
     }
   };
 
@@ -349,8 +374,9 @@ export default function App() {
               ) : (
                 messages.map((msg, idx) => (
                   <div key={idx} className={`message-wrapper ${msg.role}`}>
-                    <div className="message-bubble">
+                    <div className="message-bubble" style={msg.isPending ? { opacity: 0.7 } : {}}>
                       {msg.content}
+                      {msg.isPending && <span style={{fontSize: '0.8em', marginLeft: '8px', opacity: 0.8}}>(pending...)</span>}
                     </div>
                   </div>
                 ))
