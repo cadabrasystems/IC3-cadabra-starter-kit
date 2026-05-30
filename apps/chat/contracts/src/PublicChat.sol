@@ -62,7 +62,7 @@ contract PublicChat {
         if (chat.id == 0) revert ChatDoesNotExist();
 
         // Auto-expire stale pending requests instead of permanently blocking the chat
-        if (chat.pendingRequestId != 0) {
+        if (chat.pendingRequestTimestamp != 0) {
             if (block.timestamp < chat.pendingRequestTimestamp + REQUEST_TIMEOUT) {
                 revert ChatIsWaitingForAgent();
             }

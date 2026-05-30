@@ -166,7 +166,7 @@ export default function App() {
 
           // Check if there's a pending AI request
           const chatDetails = chats.find(c => Number(c.id) === activeChatId);
-          if (chatDetails && Number(chatDetails.pendingRequestId) > 0) {
+          if (chatDetails && Number(chatDetails.pendingRequestTimestamp) > 0) {
             const requestId = chatDetails.pendingRequestId;
 
             // Poll the inference service directly - isReady() is a free view call
