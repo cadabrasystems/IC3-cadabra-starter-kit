@@ -413,7 +413,7 @@ export default function App() {
                   <line x1="12" y1="16" x2="12" y2="12"></line>
                   <line x1="12" y1="8" x2="12.01" y2="8"></line>
                 </svg>
-                Each message is an on-chain transaction and costs a small amount of Sepolia ETH.
+                Each message is an on-chain transaction and costs a small amount of testnet AVAX.
               </p>
             </div>
           </>
@@ -456,7 +456,7 @@ export default function App() {
                   </svg>
                 </div>
                 <h3>Gas Costs</h3>
-                <p>Creating chats and sending messages are on-chain transactions. Each one costs a small amount of <strong>Sepolia ETH</strong> (testnet - no real money). Get free ETH from the <a href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia" target="_blank" rel="noopener noreferrer">Google Cloud Faucet</a>.</p>
+                <p>Creating chats and sending messages are on-chain transactions. Each one costs a small amount of <strong>testnet AVAX</strong>. Get free AVAX from the <a href="https://core.app/tools/testnet-faucet/?subnet=c&token=c" target="_blank" rel="noopener noreferrer">Avalanche Faucet</a>.</p>
               </div>
 
               <div className="welcome-card">

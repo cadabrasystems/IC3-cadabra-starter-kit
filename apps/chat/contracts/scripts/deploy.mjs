@@ -36,6 +36,7 @@ const chatReceipt = await publicClient.waitForTransactionReceipt({
 const PUBLIC_RPC_URLS = {
   11155111: "https://ethereum-sepolia-rpc.publicnode.com",
   84532: "https://base-sepolia-rpc.publicnode.com",
+  43113: "https://api.avax-test.network/ext/bc/C/rpc",
 };
 const chainId = await publicClient.getChainId();
 const frontendRpcUrl = PUBLIC_RPC_URLS[chainId] || CURRENT_RPC_URL;
