@@ -23,9 +23,9 @@ Your smart contracts can ask an AI a question and receive an answer, all fully o
 
 Check out a live, working deployment of the Chat App to see an example of an application that relies on the inference contract:
 
-🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-for-vercel.vercel.app?_vercel_share=s1pjXWfwsayJiA5Gf7BqL6fRxP1KMvGg)**
+🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-fuji.vercel.app?_vercel_share=exdRuLKOAv8SH66dyohNyNy4xmMMQ3rH)**
 
-Connect your MetaMask wallet (on the Base Sepolia network), send a message, and watch the decentralized AI respond in real-time! *(Need help setting up your wallet? See the [Step 1: Set Up MetaMask](#step-1-set-up-metamask) section below.)*
+Connect your MetaMask wallet (on the Avalanche Fuji network), send a message, and watch the decentralized AI respond in real-time! *(Need help setting up your wallet? See the [Step 1: Set Up MetaMask](#step-1-set-up-metamask) section below.)*
 
 ---
 
@@ -109,17 +109,17 @@ User (MetaMask) → Your App Contract → inferenceService.requestInference(quer
 
 ## Quick Start: What You Need to Know
 
-### The Network: Base Sepolia
+### The Network: Avalanche Fuji
 
-All development happens on **Base Sepolia**, a free testnet for the Base L2 network. You will deploy contracts, send transactions, and interact with the AI inference service entirely on this network. It costs nothing, as all ETH used is free testnet ETH.
+All development happens on **Avalanche Fuji**, a free testnet for the Base L2 network. You will deploy contracts, send transactions, and interact with the AI inference service entirely on this network. It costs nothing, as all AVAX used is free testnet AVAX.
 
 | Detail | Value |
 |---|---|
-| **Network Name** | Base Sepolia Testnet |
-| **Public RPC URL** | `https://base-sepolia-rpc.publicnode.com` |
-| **Chain ID** | `84532` |
-| **Currency Symbol** | ETH |
-| **Block Explorer URL** | [sepolia.basescan.org](https://sepolia.basescan.org) |
+| **Network Name** | Avalanche Fuji Testnet |
+| **Public RPC URL** | `https://api.avax-test.network/ext/bc/C/rpc` |
+| **Chain ID** | `43113` |
+| **Currency Symbol** | AVAX |
+| **Block Explorer URL** | [testnet.snowtrace.io](https://testnet.snowtrace.io) |
 
 ### Step 1: Set Up MetaMask
 
@@ -129,16 +129,16 @@ All development happens on **Base Sepolia**, a free testnet for the Base L2 netw
 
 2. **Enable Test Networks:** Open MetaMask, click the network dropdown at the top left, and toggle **"Show test networks"**.
 
-3. **Add Base Sepolia:** Since every MetaMask version is a bit different, generally go to MetaMask Networks settings to add a new network, and enter the details from the table above for Base Sepolia Testnet.
+3. **Add Avalanche Fuji:** Since every MetaMask version is a bit different, generally go to MetaMask Networks settings to add a new network, and enter the details from the table above for Avalanche Fuji Testnet.
 
 
-### Step 2: Get Free Testnet ETH
+### Step 2: Get Free Testnet AVAX
 
-You need testnet ETH to deploy contracts and send transactions. Here's how:
+You need testnet AVAX to deploy contracts and send transactions. Here's how:
 
-1. **Get Base Sepolia ETH**: You can use any Base Sepolia faucet, or get Sepolia ETH from the [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia) and bridge it using [Superbridge](https://superbridge.app/base-sepolia).
+1. **Get Avalanche Fuji AVAX**: You can use the [Avalanche Core Faucet](https://core.app/tools/testnet-faucet/?subnet=c&token=c).
 
-> **Tip:** You only need a small amount of ETH (0.01 - 0.05 is plenty) to deploy contracts and send messages during the hackathon.
+> **Tip:** You only need a small amount of AVAX (0.01 - 0.05 is plenty) to deploy contracts and send messages during the hackathon.
 
 ---
 
@@ -159,7 +159,7 @@ The folder contains a full-stack Web3 application with:
 
 Let's walk through running the **Chat App** (`apps/chat`).
 
-> **Note:** The repository ships with an already-deployed Chat contract on Base Sepolia, so you can run the frontend immediately without deploying anything yourself. If you want to modify the Solidity code and deploy your own version, see the [Deploy Your Own Contract](#deploy-your-own-contract) section below.
+> **Note:** The repository ships with an already-deployed Chat contract on Avalanche Fuji, so you can run the frontend immediately without deploying anything yourself. If you want to modify the Solidity code and deploy your own version, see the [Deploy Your Own Contract](#deploy-your-own-contract) section below.
 
 ### Prerequisites
 
@@ -185,7 +185,7 @@ npm run install:all
 ```
 
 ### 3. Start the Web App
-Since the chat contract is already deployed on Base Sepolia, you can start the frontend right away:
+Since the chat contract is already deployed on Avalanche Fuji, you can start the frontend right away:
 
 ```bash
 npm --prefix web run dev
@@ -199,9 +199,9 @@ Open `http://localhost:5173` in your browser, connect MetaMask, and start chatti
 
 If you want to modify the Solidity code and deploy your own version of the contract, you can easily do so. To protect your private key, we recommend prompting for it inline rather than saving it in an environment file.
 
-1. Load the Base Sepolia environment (this points the deployment script to the global AI inference service):
+1. Load the Avalanche Fuji environment (this points the deployment script to the global AI inference service):
    ```bash
-   source base-sepolia-env.sh
+   source fuji-env.sh
    ```
 2. Export your private key securely (this prompts you to paste it without showing it on screen or saving it in your bash history):
    ```bash
@@ -215,13 +215,13 @@ If you want to modify the Solidity code and deploy your own version of the contr
    ```
 
 **How does the web app know about your new contract?**
-When you run the deployment script, it automatically creates or updates the `web/public/base-sepolia.json` file with your newly deployed contract address and ABI. The web frontend reads this file on startup, so all you need to do is refresh your browser to interact with your new contract!
+When you run the deployment script, it automatically creates or updates the `web/public/fuji.json` file with your newly deployed contract address and ABI. The web frontend reads this file on startup, so all you need to do is refresh your browser to interact with your new contract!
 
 ---
 
 ## Local Development (Anvil + Mock Agent)
 
-If you prefer to develop locally without spending testnet Base Sepolia ETH or waiting for block confirmations, you can run the entire AI infrastructure on your own machine. We provide a self-contained local setup in the `local-setup` folder.
+If you prefer to develop locally without spending testnet Avalanche Fuji AVAX or waiting for block confirmations, you can run the entire AI infrastructure on your own machine. We provide a self-contained local setup in the `local-setup` folder.
 
 1. **Start Anvil (Local Blockchain)**
    *(If you don't have Anvil, install [Foundry](https://book.getfoundry.sh/getting-started/installation))*
@@ -240,7 +240,7 @@ If you prefer to develop locally without spending testnet Base Sepolia ETH or wa
    ```
 
 3. **Start the Mock Agent**
-   The mock agent listens for AI requests on your local blockchain and automatically answers them. It uses Anvil's default Account #0 which starts pre-funded with 10,000 local ETH. You can customize its logic in `local-setup/agent/agent.mjs`.
+   The mock agent listens for AI requests on your local blockchain and automatically answers them. It uses Anvil's default Account #0 which starts pre-funded with 10,000 local AVAX. You can customize its logic in `local-setup/agent/agent.mjs`.
    ```bash
    cd ../agent
    npm install
@@ -249,8 +249,8 @@ If you prefer to develop locally without spending testnet Base Sepolia ETH or wa
    *(Keep this terminal open)*
 
 4. **Run the Starter Apps Locally**
-   Now that your local infrastructure is running, you can run the sample apps against it. Use the `localhost-env.sh` script instead of `base-sepolia-env.sh`.
-   *(Note: All 10 default Anvil accounts start pre-funded with 10,000 local ETH. You will need to configure MetaMask for your local Anvil chain to interact with the frontend—see the detailed setup section just below!)*
+   Now that your local infrastructure is running, you can run the sample apps against it. Use the `localhost-env.sh` script instead of `fuji-env.sh`.
+   *(Note: All 10 default Anvil accounts start pre-funded with 10,000 local AVAX. You will need to configure MetaMask for your local Anvil chain to interact with the frontend—see the detailed setup section just below!)*
 
    For example, to run the Chat app locally:
    ```bash
@@ -270,12 +270,12 @@ If you prefer to develop locally without spending testnet Base Sepolia ETH or wa
       - Network name: `Localhost 8545`
       - New RPC URL: `http://127.0.0.1:8545`
       - Chain ID: `31337`
-      - Currency symbol: `ETH`
+      - Currency symbol: `AVAX`
    4. Save and switch to this network.
 
-   *Step 2: Get Local ETH (Two Options)*
+   *Step 2: Get Local AVAX (Two Options)*
    **Option A: Fund your existing account (Recommended)**
-   Keep using your normal MetaMask account. While Anvil is running, open a new terminal and "airdrop" yourself 100 fake ETH by running:
+   Keep using your normal MetaMask account. While Anvil is running, open a new terminal and "airdrop" yourself 100 fake AVAX by running:
    ```bash
    cast send YOUR_METAMASK_PUBLIC_ADDRESS --value 100ether --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
    ```
@@ -283,7 +283,7 @@ If you prefer to develop locally without spending testnet Base Sepolia ETH or wa
 
    **Option B: Import an Anvil account**
    1. In MetaMask, click your account icon → **Import Account**.
-   2. Paste Anvil's default private key (Account #1): `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d`. This account has 10,000 local ETH.
+   2. Paste Anvil's default private key (Account #1): `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d`. This account has 10,000 local AVAX.
 
 > [!TIP]
 > **Customizing the Local Agent for Testing:** The local agent provided in `local-setup/agent/agent.mjs` simply echoes back your prompts. Open that file and replace the `getAgentResponse(query)` function to connect to a cool cloud provider (OpenAI, Anthropic) or run an AI locally (Ollama) to test different apps!
@@ -299,23 +299,23 @@ Since the frontend reads AI answers directly from the inference service (no back
 The `web/` folder is a standard Vite + React app that can be deployed to Vercel, Netlify, GitHub Pages, or any static hosting provider.
 
 **Vercel Deployment Steps:**
-1. Push your code to GitHub (make sure `web/public/base-sepolia.json` is committed, as it contains your deployed contract address and ABI).
+1. Push your code to GitHub (make sure `web/public/fuji.json` is committed, as it contains your deployed contract address and ABI).
 2. Go to [vercel.com](https://vercel.com), click **Add New Project**, and import your repository.
 3. Set the **Root Directory** to your app's `web` folder (e.g. `hackathon-starter-kit/apps/chat/web`).
 4. Add the following **Environment Variable** (under Settings → Environment Variables):
-   - **Key:** `VITE_NETWORK`  **Value:** `base-sepolia`
+   - **Key:** `VITE_NETWORK`  **Value:** `fuji`
    - ⚠️ Make sure to enable it for **Production** (not just Development!).
 5. Click **Deploy**.
 
-> **Important:** Every time you redeploy a new smart contract (which generates a new `base-sepolia.json`), you must commit the updated JSON file, push to GitHub, and **Redeploy** on Vercel (without build cache) so the frontend picks up the new contract address.
+> **Important:** Every time you redeploy a new smart contract (which generates a new `fuji.json`), you must commit the updated JSON file, push to GitHub, and **Redeploy** on Vercel (without build cache) so the frontend picks up the new contract address.
 
 ---
 
 ## Troubleshooting
 
-### MetaMask "Still connecting to Base Sepolia Testnet" / "Update RPC" Error
-If MetaMask is stuck loading or fails to connect to the Base Sepolia network, it means the default public RPC is congested or down. To fix this, click "Update RPC" in MetaMask (or go to Settings -> Networks -> Base Sepolia Testnet) and change the **New RPC URL** to one of these reliable public backups:
-- `https://base-sepolia-rpc.publicnode.com`
+### MetaMask "Still connecting to Avalanche Fuji Testnet" / "Update RPC" Error
+If MetaMask is stuck loading or fails to connect to the Avalanche Fuji network, it means the default public RPC is congested or down. To fix this, click "Update RPC" in MetaMask (or go to Settings -> Networks -> Avalanche Fuji Testnet) and change the **New RPC URL** to one of these reliable public backups:
+- `https://api.avax-test.network/ext/bc/C/rpc`
 
 ### Vercel: Page loads but app is stuck / "localhost.json 404"
-This means the `VITE_NETWORK` environment variable is missing or not set for the **Production** environment. Go to Vercel Settings → Environment Variables, set `VITE_NETWORK=base-sepolia` with the **Production** checkbox enabled, and **Redeploy without build cache**.
+This means the `VITE_NETWORK` environment variable is missing or not set for the **Production** environment. Go to Vercel Settings → Environment Variables, set `VITE_NETWORK=fuji` with the **Production** checkbox enabled, and **Redeploy without build cache**.

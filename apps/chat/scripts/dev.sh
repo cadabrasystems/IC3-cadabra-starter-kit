@@ -11,7 +11,7 @@ cleanup() {
 trap cleanup EXIT
 
 if [[ -z "${INFERENCE_ADDRESS:-}" ]]; then
-  echo "ERROR: INFERENCE_ADDRESS is not set. Please source an environment file first (e.g. source sepolia-env.sh)"
+  echo "ERROR: INFERENCE_ADDRESS is not set. Please source an environment file first (e.g. source fuji-env.sh)"
   exit 1
 fi
 
