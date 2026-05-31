@@ -15,11 +15,7 @@ if [ -n "$PARENT_DIR" ] && [ -f "$PARENT_DIR/.env" ]; then
     set +a
 fi
 
-if [ -n "$ALCHEMY_API_KEY" ]; then
-    export RPC_URL="https://avax-fuji.g.alchemy.com/v2/$ALCHEMY_API_KEY"
-else
-    export RPC_URL="https://api.avax-test.network/ext/bc/C/rpc"
-fi
+export RPC_URL="https://api.avax-test.network/ext/bc/C/rpc"
 
 export VITE_NETWORK=fuji
-export INFERENCE_ADDRESS="0xb7c2d85259d676b0dfbf932e992f8408f5b42b68"
+export INFERENCE_ADDRESS="0x339f01bed26baa5ff3482937bad11f11afbc502b"

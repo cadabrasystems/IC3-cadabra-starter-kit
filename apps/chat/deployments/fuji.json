@@ -2,7 +2,7 @@
   "chainId": 43113,
   "rpcUrl": "https://api.avax-test.network/ext/bc/C/rpc",
   "inference": {
-    "address": "0xb7c2d85259d676b0dfbf932e992f8408f5b42b68",
+    "address": "0x339f01bed26baa5ff3482937bad11f11afbc502b",
     "abi": [
       {
         "type": "function",
@@ -103,7 +103,7 @@
     ]
   },
   "chat": {
-    "address": "0xf91bdd74872d76e75a4c2241a5d0e55499d59eb6",
+    "address": "0xd153c2f4061d79bef009e867eb970db20713e51f",
     "abi": [
       {
         "type": "constructor",

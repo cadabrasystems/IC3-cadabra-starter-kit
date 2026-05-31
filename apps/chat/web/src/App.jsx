@@ -26,7 +26,7 @@ async function ensureWalletChain(walletClient, deployment) {
   await walletClient.addChain({
     chain: {
       id: expectedChainId,
-      name: expectedChainId === 84532 ? "Base Sepolia" : `Chain ${expectedChainId}`,
+      name: expectedChainId === 84532 ? "Base Sepolia" : (expectedChainId === 43113 ? "Avalanche Fuji" : `Chain ${expectedChainId}`),
       nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
       rpcUrls: { default: { http: [deployment.rpcUrl] } }
     }
@@ -60,7 +60,7 @@ export default function App() {
 
         const customChain = {
           id: config.chainId,
-          name: config.chainId === 84532 ? 'Base Sepolia' : `Chain ${config.chainId}`,
+          name: config.chainId === 84532 ? 'Base Sepolia' : (config.chainId === 43113 ? 'Avalanche Fuji' : `Chain ${config.chainId}`),
           nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
           rpcUrls: { default: { http: [config.rpcUrl] } },
         };
@@ -124,7 +124,7 @@ export default function App() {
       const config = deploymentConfig;
       const customChain = {
         id: config.chainId,
-        name: config.chainId === 84532 ? 'Base Sepolia' : `Chain ${config.chainId}`,
+        name: config.chainId === 84532 ? 'Base Sepolia' : (config.chainId === 43113 ? 'Avalanche Fuji' : `Chain ${config.chainId}`),
         nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
         rpcUrls: { default: { http: [config.rpcUrl] } },
       };
