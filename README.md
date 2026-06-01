@@ -2,7 +2,7 @@
 
 Welcome to the **Cadabra Hackathon Starter Kit**! The core goal of this hackathon is to empower you to build innovative Web3 applications that leverage an AI inference agent natively available directly on the blockchain. 
 
-💬 **Join our Discord for help, announcements, and team coordination:** [discord.gg/vpHdpacT](https://discord.gg/vpHdpacT)
+💬 **Join our Discord for help, announcements, and team coordination:** [discord.gg/JGW5HZyU8](https://discord.gg/JGW5HZyU8)
 
 Your smart contracts can ask an AI a question and receive an answer, all fully on-chain, trustlessly. This repository is designed to help you quickly integrate your smart contracts with the global `CadabraInference` service.
 
