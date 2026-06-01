@@ -25,7 +25,7 @@ Check out a live, working deployment of the Chat App to see an example of an app
 
 🔗 **[Live Chat App Demo](https://ic-3-cadabra-starter-kit-fuji.vercel.app?_vercel_share=exdRuLKOAv8SH66dyohNyNy4xmMMQ3rH)**
 
-Connect your MetaMask wallet (on the Avalanche Fuji network), send a message, and watch the decentralized AI respond in real-time! *(Need help setting up your wallet? See the [Step 1: Set Up MetaMask](#step-1-set-up-metamask) section below.)*
+Connect your MetaMask wallet (on the Avalanche Fuji network), send a message, and watch the decentralized AI respond in real-time! *(Need help setting up your wallet or getting Fuji/Avalanche tokens? See the [Step 1: Set Up MetaMask](#step-1-set-up-metamask) and [Step 2: Get Free Testnet AVAX](#step-2-get-free-testnet-avax) sections below.)*
 
 ---
 
