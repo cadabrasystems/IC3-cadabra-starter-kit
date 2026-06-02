@@ -136,7 +136,7 @@ All development happens on **Avalanche Fuji**, a free testnet for the Base L2 ne
 
 You need testnet AVAX to deploy contracts and send transactions. Here's how:
 
-1. **Get Avalanche Fuji AVAX**: You can use the [Avalanche Core Faucet](https://core.app/tools/testnet-faucet/?subnet=c&token=c).
+1. **Get Avalanche Fuji AVAX**: You can use the [Avalanche Core Faucet](https://build.avax.network/console/primary-network/faucet).
 
 > **Tip:** You only need a small amount of AVAX (0.01 - 0.05 is plenty) to deploy contracts and send messages during the hackathon.
 
